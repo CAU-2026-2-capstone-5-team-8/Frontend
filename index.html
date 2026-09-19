@@ -1,11 +1,33 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>책길 — 나의 읽기 준비도</title><link rel="stylesheet" href="/style.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>책길 — 나의 읽기 준비도</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
 <body>
-<header><a href="/" class="brand">책길<span>나에게 맞는 배움의 시작</span></a><span class="badge">캡스톤 8조 · 개발 데모</span></header>
-<main>
-<aside><p class="intro">읽기 전에,<br>내가 아는 것부터.</p><p>익숙한 개념을 돌아보고<br>다음 배움을 준비해 보세요.</p><ol id="steps"><li>분야 선택</li><li>자기평가</li><li>나의 프로필</li></ol><small>자기평가 결과는 시험 성적이나<br>검증된 독해 능력 점수가 아닙니다.</small></aside>
-<section class="workspace"><div id="notice" role="alert" hidden></div><div id="app" aria-live="polite"></div></section>
-</main><footer>책길 / Bookmatch <span>현재 제공: 분야 선택 · 진단 · 프로필</span></footer>
-<script type="module" src="/src/app.js"></script>
-</body></html>
+  <header>
+    <a href="/" class="brand" aria-label="책길 홈">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 9C12 6 7 6 3 7v19c5-1 9 0 13 3 4-3 8-4 13-3V7c-4-1-9-1-13 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 9v20M8 12l4 1M8 17l4 1M21 13l3-1M21 18l3-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      책길
+    </a>
+    <span class="header-caption">책과 나 사이, 알맞은 시작</span>
+    <span class="badge">체험 버전</span>
+  </header>
+  <main>
+    <nav aria-label="진단 진행 단계">
+      <ol id="steps"><li><span>1</span>분야 선택</li><li><span>2</span>자기평가</li><li><span>3</span>나의 프로필</li></ol>
+    </nav>
+    <section class="workspace" aria-label="읽기 준비도 진단">
+      <div class="page-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M10 5h20v31l-10-6-10 6V5Z" fill="currentColor"/><path d="M16 13h8M16 18h8" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+      <div id="notice" role="alert" hidden></div>
+      <div id="app" aria-live="polite"></div>
+    </section>
+    <p class="assessment-caption">좋은 배움은 지금의 나를 아는 것에서 시작해요.</p>
+  </main>
+  <footer><span>책길 <span class="footer-credit">CAU 캡스톤 8조</span></span><span>나의 속도로, 다음 페이지로.</span></footer>
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>
