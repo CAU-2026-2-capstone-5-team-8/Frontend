@@ -13,12 +13,13 @@ test('proxy preserves false answers, path, query and API error status', async t 
     let body=''; for await (const chunk of req) body+=chunk;
     assert.equal(req.url, '/api/assessments/7/answers/12?source=demo');
     assert.equal(req.method, 'PUT');
+    assert.equal(req.headers['idempotency-key'], 'request-key');
     assert.deepEqual(JSON.parse(body), {knowsConcept:false});
     res.writeHead(409, {'Content-Type':'application/json'});
     res.end(JSON.stringify({code:'SESSION_LOCKED', message:'이미 완료된 진단입니다.'}));
   }), t);
   const url = await listen(makeServer(upstream), t);
-  const response = await fetch(`${url}/api/assessments/7/answers/12?source=demo`, {method:'PUT', body:JSON.stringify({knowsConcept:false})});
+  const response = await fetch(`${url}/api/assessments/7/answers/12?source=demo`, {method:'PUT', headers:{'Idempotency-Key':'request-key'}, body:JSON.stringify({knowsConcept:false})});
   assert.equal(response.status, 409);
   assert.equal((await response.json()).code, 'SESSION_LOCKED');
 });

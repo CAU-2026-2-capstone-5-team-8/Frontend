@@ -27,3 +27,17 @@ test('reject invalid identifiers and nonboolean answers before network',async()=
   await assert.rejects(api.answer(1,2,'false'));
   await assert.rejects(api.session('../secret'));
 });
+test('recommendation sends v2 public request with idempotency key',async()=>{
+  let captured;
+  const api=createApi(async(url,options)=>{captured={url,options};return new Response('{"id":9,"items":[]}');});
+  await api.recommend(1,2,'recommendation-key',5);
+  assert.equal(captured.url,'/api/recommendations');
+  assert.equal(captured.options.method,'POST');
+  assert.equal(captured.options.headers['Idempotency-Key'],'recommendation-key');
+  assert.deepEqual(JSON.parse(captured.options.body),{userId:1,topicId:2,challengeLevel:'BALANCED',topK:5});
+});
+test('recommendation rejects missing idempotency key and invalid limit',async()=>{
+  const api=createApi(()=>{throw Error('network must not be called');});
+  await assert.rejects(api.recommend(1,2,'',5));
+  await assert.rejects(api.recommend(1,2,'key',21));
+});

@@ -10,11 +10,11 @@ const id = value => {
 };
 
 export function createApi(fetcher = fetch) {
-  async function request(path, method = 'GET', body) {
+  async function request(path, method = 'GET', body, headers = {}) {
     let response;
     try {
       response = await fetcher('/api' + path, {method,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', ...headers},
         ...(body === undefined ? {} : {body: JSON.stringify(body)}),
         signal: AbortSignal.timeout(20000)});
     } catch {
@@ -39,5 +39,13 @@ export function createApi(fetcher = fetch) {
     },
     complete: async sessionId => request(`/assessments/${id(sessionId)}/complete`, 'POST'),
     profile: async (userId, topicId) => request(`/users/${id(userId)}/profiles/${id(topicId)}`),
+    recommend: async (userId, topicId, idempotencyKey, topK = 5) => {
+      if (typeof idempotencyKey !== 'string' || !idempotencyKey.trim()) throw new Error('추천 요청 키가 필요합니다.');
+      const limit = Number(topK);
+      if (!Number.isSafeInteger(limit) || limit < 1 || limit > 20) throw new Error('추천 도서 수를 확인해 주세요.');
+      return request('/recommendations', 'POST', {
+        userId:id(userId), topicId:id(topicId), challengeLevel:'BALANCED', topK:limit,
+      }, {'Idempotency-Key':idempotencyKey});
+    },
   };
 }

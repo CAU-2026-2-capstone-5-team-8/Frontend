@@ -65,6 +65,21 @@ progress::-moz-progress-bar { background: var(--accent); }
 .result strong { font-size: 30px; font-weight: 650; color: var(--accent); letter-spacing: -1px; }
 .result progress { height: 7px; margin: 0; }
 .result ~ .muted { margin: 24px 0 0; font-size: 11px; }
+.recommendation-list { display: grid; gap: 16px; }
+.recommendation-card { margin-top: 18px; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #fdfcff; }
+.recommendation-head { display: flex; align-items: flex-start; gap: 13px; }
+.recommendation-head h2 { margin: 0; font-size: 18px; line-height: 1.5; letter-spacing: -.4px; }
+.recommendation-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+.rank-badge { flex: 0 0 auto; padding: 5px 9px; border-radius: 14px; background: #eee9fb; color: var(--accent); font-size: 11px; font-weight: 700; }
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.metric { padding: 13px; border-radius: 9px; background: white; border: 1px solid #eeeaf4; }
+.metric span, .metric small { display: block; margin: 0; color: var(--muted); font-size: 10px; }
+.metric strong { display: block; margin: 5px 0 2px; color: var(--accent); font-size: 20px; }
+.concepts { margin: 16px 0 0; color: var(--muted); font-size: 11px; line-height: 1.8; }
+.concepts b { color: #4a4358; margin-right: 5px; }
+.reason-list { margin: 13px 0 0; padding: 13px 13px 13px 30px; border-radius: 9px; background: #f5f2fb; color: #5f586d; font-size: 11px; line-height: 1.75; }
+.empty-result { margin: 20px 0; padding: 24px; border: 1px dashed #cfc7dc; border-radius: 12px; text-align: center; color: var(--muted); }
+.empty-result strong { color: #4a4358; }
 #notice { margin-bottom: 22px; padding: 14px; border-radius: 8px; background: #fff1ed; color: #973e29; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
 .reading-scene { grid-column: 2; grid-row: 1 / 3; align-self: center; padding-bottom: 50px; }
 .book-art { position: relative; width: 230px; height: 330px; margin: 15px auto 45px; }
@@ -97,6 +112,7 @@ h1:focus { outline: none; }
   .workspace, body:not([data-stage="0"]) .workspace { padding: 25px 22px; border-radius: 14px; }
   #steps { justify-content: space-between; }#steps li { font-size: 11px; gap: 6px; }#steps li:not(:last-child)::after { width: 10px; margin: 0 6px; }
   .actions button { flex: 1; }h1 { font-size: 21px; }legend { font-size: 20px; }
+  .metric-grid { grid-template-columns: 1fr; }
   footer { margin: 0 20px; padding: 22px 0; font-size: 10px; }.footer-credit { display: block; margin: 5px 0 0; }
 }
 @media(prefers-reduced-motion: reduce) { button { transition: none; } }
