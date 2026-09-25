@@ -23,7 +23,7 @@ app.querySelector('#reload').onclick=()=>run(restore);
 app.querySelector('#home').onclick=choose;
 if(locked)app.querySelector('#answer').hidden=true;
 }
-function percent(value){return Number.isFinite(Number(value))?`${Math.round(Number(value)*100)}%`:'평가 근거 없음';}
+function percent(value){if(value==null||value==='')return '평가 근거 없음';const number=Number(value);return Number.isFinite(number)?`${Math.round(number*100)}%`:'평가 근거 없음';}
 function result(profile){lastProfile=profile;recommendationKey=crypto.randomUUID();stage(2);app.innerHTML=`<h1>나의 읽기 준비도</h1><p class="muted">저장한 답변을 바탕으로 정리한 프로필입니다.</p>${[['vocabulary','어휘 이해'],['backgroundKnowledge','배경지식'],['comprehension','개념 이해']].map(([k,title])=>{const value=Number(profile[k]);if(!Number.isFinite(value)||value<0||value>1)throw new Error('프로필 점수를 확인할 수 없습니다.');return `<div class="result"><div><span>${title}</span><strong>${Math.round(value*100)}%</strong></div><progress value="${value}" max="1" aria-label="${title}"></progress></div>`;}).join('')}<p class="note">자기평가 기반의 참고 정보입니다.${String(profile.calculationVersion).startsWith('stub')?' 현재는 데모 계산 결과이며 실제 ML 평가가 아닙니다.':''}</p><small>계산 버전: ${escape(profile.calculationVersion)}<br>진단 번호: ${escape(profile.sessionId)}</small><div class="actions"><button id="recommend">추천 도서 확인하기</button><button id="restart" class="secondary">다른 분야 살펴보기</button></div>`;
 app.querySelector('#recommend').onclick=()=>run(async()=>{const recommendation=await api.recommend(user,selectedTopic,recommendationKey);recommendations(recommendation);focus();});
 app.querySelector('#restart').onclick=()=>{remember(null);lastProfile=null;choose();};}
