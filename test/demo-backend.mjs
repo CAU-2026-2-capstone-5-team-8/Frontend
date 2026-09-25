@@ -18,5 +18,10 @@ createServer(async(req,res)=>{
     if(q){q.knowsConcept=JSON.parse(body).knowsConcept;return send(q);}
   }
   if(req.url==='/api/assessments/1/complete'&&session){session.status='COMPLETED';return send({...session,profile:profile()});}
+  if(req.url==='/api/recommendations'&&req.method==='POST'){
+    res.statusCode=201;return send({id:1,modelVersion:'rank-prerequisite-first-v2',diagnostics:{personalizedCandidateShortage:0},items:[
+      {id:1,bookId:1,rank:1,title:'Operating Systems',author:'William Stallings',prerequisiteReadiness:.8,prerequisiteAssessedCount:4,prerequisiteTotalCount:5,directLearningOpportunity:.4,directAssessedCount:3,directTotalCount:6,coveredConcepts:['process','memory management'],reasons:['선행 개념 준비도가 충분합니다.','새롭게 배울 개념이 남아 있습니다.']}
+    ]});
+  }
   res.statusCode=404;send({message:'Fixture route not found'});
 }).listen(8089,'127.0.0.1',()=>console.log('Browser fixture: http://127.0.0.1:8089'));

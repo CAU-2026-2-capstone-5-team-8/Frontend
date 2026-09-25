@@ -23,8 +23,11 @@ export function makeServer(backend = 'http://127.0.0.1:8080') {
         const target = new URL(upstream.origin);
         target.pathname = path;
         target.search = new URL(req.url, 'http://localhost').search;
+        const headers = {'Content-Type':'application/json'};
+        const idempotencyKey = req.headers['idempotency-key'];
+        if (typeof idempotencyKey === 'string') headers['Idempotency-Key'] = idempotencyKey;
         const result = await fetch(target, {method:req.method, redirect:'manual',
-          headers:{'Content-Type':'application/json'},
+          headers,
           ...(chunks.length ? {body:Buffer.concat(chunks)} : {}), signal:AbortSignal.timeout(15000)});
         if (result.status >= 300 && result.status < 400) throw Error('Unexpected redirect');
         const body = Buffer.from(await result.arrayBuffer());
