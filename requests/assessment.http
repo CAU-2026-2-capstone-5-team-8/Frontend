@@ -5,6 +5,7 @@
 # POST assessments 응답에서 id와 questions[].id를 복사하세요.
 @sessionId = 1
 @issuedQuestionId = 1
+@multipleChoiceQuestionId = 2
 
 ### 1. 분야 확인
 GET {{baseUrl}}/api/topics
@@ -18,13 +19,19 @@ Content-Type: application/json
 ### 3. 발급 문항 및 저장 상태 확인
 GET {{baseUrl}}/api/assessments/{{sessionId}}
 
-### 4. 각 questions[].id에 대해 반복. false도 유효한 답변입니다.
+### 4a. SELF_REPORT 문항 답변. false도 유효한 답변입니다.
 PUT {{baseUrl}}/api/assessments/{{sessionId}}/answers/{{issuedQuestionId}}
 Content-Type: application/json
 
 {"knowsConcept": false}
 
-### 5. 모든 문항을 저장한 후 완료
+### 4b. MULTIPLE_CHOICE 문항 답변. choices의 zero-based index를 보냅니다.
+PUT {{baseUrl}}/api/assessments/{{sessionId}}/answers/{{multipleChoiceQuestionId}}
+Content-Type: application/json
+
+{"selectedChoiceIndex": 3}
+
+### 5. 두 형식의 모든 문항을 저장한 후 완료
 POST {{baseUrl}}/api/assessments/{{sessionId}}/complete
 
 ### 6. 최신 프로필 확인
