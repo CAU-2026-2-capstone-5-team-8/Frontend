@@ -57,8 +57,9 @@ createServer(async(req,res)=>{
   if(req.url?.startsWith('/api/assessments/1/answers/')&&session){
     const q=session.questions.find(q=>q.id===Number(req.url.split('/').at(-1)));
     if(q){
-      const input=JSON.parse(body);
-      const keys=Object.keys(input);
+      let input;
+      try{input=JSON.parse(body);}catch{/* Invalid input uses the same fixture error response. */}
+      const keys=input&&typeof input==='object'&&!Array.isArray(input)?Object.keys(input):[];
       if(q.answerMode==='SELF_REPORT'&&keys.length===1&&typeof input.knowsConcept==='boolean'){
         q.knowsConcept=input.knowsConcept;q.selectedChoiceIndex=null;return send(q);
       }
