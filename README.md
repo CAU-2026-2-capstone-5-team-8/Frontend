@@ -57,6 +57,8 @@ BACKEND_URL=http://127.0.0.1:8089 npm start
 
 fixture는 메모리에서 단일 진단만 유지하며 프로필은 고정값입니다. 객관식 정답은 포함하거나 노출하지 않습니다. 실제 generated v4 import는 Backend의 documented `question-import` flow가 필요합니다. `npm start`는 fixture를 자동 실행하지 않습니다.
 
+멘토링용 fixture의 추천 응답은 로컬에서 측정한 Discovery-LA `rank-v2` Actual ReaderProfile Top-5와 후보 풀 diagnostics를 그대로 반영합니다. 진단 프로필은 여전히 `stub-browser-fixture`이며, 이 화면은 실시간 Spring/ML E2E 연동 결과가 아니라 UI 흐름 확인용 fixture입니다.
+
 ## API 요청 예제
 
 VS Code REST Client 등에서 [requests/assessment.http](requests/assessment.http)를 열면 수동으로 동일 흐름을 실행할 수 있습니다. 예제 ID를 실제 응답으로 교체하고 **모든 발급 문항에 답변한 후** 완료 요청을 보내세요. `conceptId`가 아니라 `questions[].id`가 답변 API의 문항 ID입니다.

@@ -72,14 +72,19 @@ progress::-moz-progress-bar { background: var(--accent); }
 .result strong { font-size: 30px; font-weight: 650; color: var(--accent); letter-spacing: -1px; }
 .result progress { height: 7px; margin: 0; }
 .result ~ .muted { margin: 24px 0 0; font-size: 11px; }
+.pool-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 14px; margin: -5px 0 10px; padding: 13px 15px; border: 1px solid #ded8eb; border-radius: 10px; background: #f7f4fc; }
+.pool-summary strong { color: #4e4267; font-size: 14px; }
+.pool-summary span { color: var(--accent); font-size: 12px; font-weight: 650; }
+.pool-summary small { flex-basis: 100%; margin: 0; }
+.demo-note { margin: 0 0 4px; color: var(--muted); font-size: 11px; }
 .recommendation-list { display: grid; gap: 16px; }
-.recommendation-card { margin-top: 18px; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #fdfcff; }
+.recommendation-card { margin-top: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fdfcff; }
 .recommendation-head { display: flex; align-items: flex-start; gap: 13px; }
 .recommendation-head h2 { margin: 0; font-size: 18px; line-height: 1.5; letter-spacing: -.4px; }
 .recommendation-head p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
 .rank-badge { flex: 0 0 auto; padding: 5px 9px; border-radius: 14px; background: #eee9fb; color: var(--accent); font-size: 11px; font-weight: 700; }
-.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
-.metric { padding: 13px; border-radius: 9px; background: white; border: 1px solid #eeeaf4; }
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.metric { padding: 11px 13px; border-radius: 9px; background: white; border: 1px solid #eeeaf4; }
 .metric span, .metric small { display: block; margin: 0; color: var(--muted); font-size: 10px; }
 .metric strong { display: block; margin: 5px 0 2px; color: var(--accent); font-size: 20px; }
 .concepts { margin: 16px 0 0; color: var(--muted); font-size: 11px; line-height: 1.8; }

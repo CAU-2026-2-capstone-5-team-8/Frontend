@@ -1,6 +1,34 @@
 // Browser UI-contract fixture only. This is not a synchronized production artifact or real Backend E2E.
 import {createServer} from 'node:http';
-let session;
+import {fileURLToPath} from 'node:url';
+
+// This fixture mirrors the measured Discovery-LA rank-v2 output for mentor-demo UI verification.
+// It is not a live ML/Backend E2E response. The paired profile remains stub-browser-fixture.
+// Ranking values come from rank-v2-results.json; authors and concepts come from the paired
+// Data-Pipeline canonical metadata and concept-mapping artifact. Missing rank fields stay absent.
+export const mentorDemoRecommendation={
+  id:'discovery-la-ranking-pilot-20260929',
+  modelVersion:'rank-prerequisite-first-v2',
+  demoNote:'실측 Discovery-LA rank-v2 결과를 반영한 UI 데모입니다.',
+  qualityNote:'현재는 전공서/수험서 품질 필터 적용 전 결과입니다.',
+  diagnostics:{
+    requestedLimit:5,
+    returnedCount:5,
+    topicCandidateCount:83,
+    personalizableCount:6,
+    conceptOnlyCount:5,
+    evidenceUnavailableCount:72,
+    fallbackCount:77,
+    personalizedCandidateShortage:0,
+  },
+  items:[
+    {bookId:'isbn13:9788961055680',rank:1,title:'현대 선형대수학',author:'이상구,김덕선 공저',prerequisiteReadiness:1,prerequisiteCoverage:1,directLearningOpportunity:null,directCoverage:0,coveredConcepts:['rank']},
+    {bookId:'isbn13:9788970505329',rank:2,title:'인공지능 시대의 선형대수학',author:'김대수,김경동 저',prerequisiteReadiness:1,prerequisiteCoverage:1,directLearningOpportunity:null,directCoverage:0,coveredConcepts:['rank']},
+    {bookId:'isbn13:9791156574446',rank:3,title:'해커스 편입수학 선형대수학 행렬/벡터',author:'홍창의 저',prerequisiteReadiness:1,prerequisiteCoverage:1,directLearningOpportunity:null,directCoverage:0,coveredConcepts:['rank']},
+    {bookId:'isbn13:9788964214428',rank:4,title:'예제 중심의 선형대수학',author:'민만식,황상민 공저',prerequisiteReadiness:.95,prerequisiteCoverage:1,directLearningOpportunity:.475,directCoverage:1,coveredConcepts:['eigenvalue','eigenvector','matrix','vector space']},
+    {bookId:'isbn13:9788952117441',rank:5,title:'선형대수와 군',author:'이인석 저',prerequisiteReadiness:.8166666666666668,prerequisiteCoverage:1,directLearningOpportunity:.34375,directCoverage:.8,coveredConcepts:['basis','diagonalization','dimension','gaussian elimination','inner product','matrix','orthogonality','rank','vector','vector space']},
+  ],
+};
 const profile=()=>({sessionId:1, vocabulary:1/3, backgroundKnowledge:1/3, comprehension:1/3, calculationVersion:'stub-browser-fixture'});
 const selfReportPrompts=[
   '행렬의 행과 열이라는 용어가 익숙한가요?',
@@ -31,7 +59,9 @@ const v4Question={
   selectedChoiceIndex:null,
 };
 const answered=q=>q.answerMode==='MULTIPLE_CHOICE'?Number.isSafeInteger(q.selectedChoiceIndex):typeof q.knowsConcept==='boolean';
-createServer(async(req,res)=>{
+export function makeDemoBackend(){
+let session;
+return createServer(async(req,res)=>{
   let body='';for await(const chunk of req)body+=chunk;
   res.setHeader('Content-Type','application/json');
   const send=value=>res.end(JSON.stringify(value));
@@ -74,9 +104,12 @@ createServer(async(req,res)=>{
     session.status='COMPLETED';return send({...session,profile:profile()});
   }
   if(req.url==='/api/recommendations'&&req.method==='POST'){
-    res.statusCode=201;return send({id:1,modelVersion:'rank-prerequisite-first-v2',diagnostics:{personalizedCandidateShortage:0},items:[
-      {id:1,bookId:1,rank:1,title:'Introduction to Linear Algebra',author:'Gilbert Strang',prerequisiteReadiness:.8,prerequisiteAssessedCount:4,prerequisiteTotalCount:5,directLearningOpportunity:.4,directAssessedCount:3,directTotalCount:6,coveredConcepts:['matrix','vector'],reasons:['선행 개념 준비도가 충분합니다.','새롭게 배울 개념이 남아 있습니다.']}
-    ]});
+    res.statusCode=201;return send(mentorDemoRecommendation);
   }
   res.statusCode=404;send({message:'Fixture route not found'});
-}).listen(8089,'127.0.0.1',()=>console.log('Browser fixture: http://127.0.0.1:8089'));
+});
+}
+
+if(process.argv[1]===fileURLToPath(import.meta.url)){
+  makeDemoBackend().listen(8089,'127.0.0.1',()=>console.log('Browser fixture: http://127.0.0.1:8089'));
+}
