@@ -6,14 +6,14 @@ import {fileURLToPath} from 'node:url';
 export function makeServer(backend = 'http://127.0.0.1:8080') {
   const upstream = new URL(backend);
   if (!['http:', 'https:'].includes(upstream.protocol) || upstream.username || upstream.password) throw Error('Invalid BACKEND_URL');
-  const files = {'/':'index.html', '/src/app.js':'src/app.js', '/src/api.js':'src/api.js', '/src/diagnostics.js':'src/diagnostics.js', '/style.css':'style.css'};
+  const files = {'/':'index.html', '/src/app.js':'src/app.js', '/src/api.js':'src/api.js', '/src/diagnostics.js':'src/diagnostics.js', '/src/library.js':'src/library.js', '/style.css':'style.css'};
   return createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     const path = new URL(req.url, 'http://localhost').pathname;
     try {
       if (path.startsWith('/api/')) {
-        if (!['GET','POST','PUT'].includes(req.method)) {res.writeHead(405).end(); return;}
+        if (!['GET','POST','PUT','DELETE'].includes(req.method)) {res.writeHead(405).end(); return;}
         const chunks = []; let size = 0;
         for await (const chunk of req) {
           size += chunk.length;

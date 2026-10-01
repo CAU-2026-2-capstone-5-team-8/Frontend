@@ -1,17 +1,7 @@
 <!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ffffff">
-<title>책길 — 다음 책을 만나는 곳</title><link rel="stylesheet" href="/style.css">
-</head>
-<body data-stage="0">
-<a class="skip-link" href="#app">진단으로 바로 가기</a>
-<header><a href="/" class="brand" aria-label="책길 홈"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 5h9l3 4 3-4h9v22h-9l-3 3-3-3H4V5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 10v16M8 10h4M20 10h4" stroke="currentColor" stroke-width="2"/></svg>책길</a><span class="header-caption">다음 책을 만나는 곳</span><span class="badge">체험 버전</span></header>
-<main>
-<section class="intro" aria-label="책길 소개"><p class="intro-title">읽고 싶은 마음에,<br>맞는 시작점을.</p><p class="intro-description">지금 알고 있는 것에서 다음 배움으로.<br>나의 이해를 살펴보고, 이어 읽을 책을 찾아보세요.</p>
-<div class="reading-scene" aria-hidden="true"><div class="book book-one"><span class="book-series">책길 읽기 노트</span><strong>말을<br>이해하다.</strong><span class="book-subtitle">어휘 이해</span><div class="book-glyph">Aa</div></div><div class="book book-two"><span class="book-series">책길 읽기 노트</span><strong>지식을<br>연결하다.</strong><span class="book-subtitle">배경지식</span><div class="book-glyph">∴</div></div><div class="book book-three"><span class="book-series">책길 읽기 노트</span><strong>생각을<br>넓히다.</strong><span class="book-subtitle">개념 이해</span><div class="book-glyph">↗</div></div></div>
-<p class="scene-note">어휘, 배경지식, 개념 이해.<br>읽기를 이루는 세 가지를 함께 살펴봐요.</p></section>
-<div class="flow"><nav aria-label="진단 진행 단계"><ol id="steps"><li><span>1</span>분야 선택</li><li><span>2</span>읽기 진단</li><li><span>3</span>결과와 추천</li></ol></nav><section class="workspace" aria-label="읽기 준비도 진단"><div id="notice" role="alert" hidden></div><div id="app" tabindex="-1"></div></section></div>
-</main>
-<footer><span>책길 <span class="footer-credit">CAU 캡스톤 8조</span></span><span>나의 속도로, 다음 페이지로.</span></footer>
-<script type="module" src="/src/app.js"></script></body></html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f8fa"><title>책길 — 나의 다음 페이지</title><link rel="stylesheet" href="/style.css"></head>
+<body data-stage="0"><a class="skip-link" href="#app">본문으로 바로 가기</a>
+<aside class="sidebar"><a href="/" class="brand"><span class="brand-mark" aria-hidden="true">책</span>책길<span class="brand-dot">.</span></a><p class="sidebar-label">나의 독서 공간</p><nav class="main-nav" aria-label="주 메뉴"><button id="diagnosis-nav" class="nav-item" aria-current="page"><span aria-hidden="true">◎</span>읽기 진단</button><button id="catalog-nav" class="nav-item"><span aria-hidden="true">▦</span>책 둘러보기</button><button id="library-nav" class="nav-item"><span aria-hidden="true">▤</span>내 서재</button></nav><div class="sidebar-bottom"><div class="avatar" aria-hidden="true">책</div><div><strong>나의 독서 공간</strong><small>체험 계정 · 로그인 전</small></div></div></aside>
+<div class="main-shell"><header class="topbar"><span>책길 <span class="breadcrumb-divider">/</span> <strong id="page-label">읽기 진단</strong></span><span class="badge"><i></i>프로토타입</span></header>
+<main><section class="intro" aria-label="책길 소개"><div><p class="eyebrow">나의 다음 페이지</p><p class="intro-title">좋은 책, 그다음은<br><span>나에게 맞는 책.</span></p><p class="intro-description">알고 있는 것과 새로 배울 것 사이.<br>지금의 나에게 맞는 읽기를 시작해 보세요.</p></div><div class="path-art" aria-hidden="true"><span class="art-index">01 — 03</span><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="art-caption">이해에서 발견으로 <span>↗</span></div></div></section>
+<div class="flow"><nav class="step-nav" aria-label="진단 진행 단계"><ol id="steps"><li><span>01</span>분야 선택</li><li><span>02</span>읽기 진단</li><li><span>03</span>결과와 추천</li></ol><span class="step-caption">나를 알아가는 작은 시작</span></nav><section class="workspace" aria-label="읽기 준비도 진단"><div id="notice" role="alert" hidden></div><div id="app" tabindex="-1"></div></section></div></main><footer><span>책길 · CAU 캡스톤 8조</span><span>한 권씩, 나의 속도로.</span></footer></div><script type="module" src="/src/app.js"></script></body></html>
