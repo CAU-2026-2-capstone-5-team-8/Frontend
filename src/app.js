@@ -17,7 +17,7 @@ function answerFields(q,mode){
 }
 const saved=()=>{try{return localStorage.getItem('bookmatch-session');}catch{return null;}};
 const remember=value=>{try{value ? localStorage.setItem('bookmatch-session',value) : localStorage.removeItem('bookmatch-session');}catch{/* Storage is optional. */}};
-function stage(n){document.body.dataset.stage=String(n);document.querySelectorAll('#steps li').forEach((e,i)=>{e.classList.toggle('active',i===n);if(i===n)e.setAttribute('aria-current','step');else e.removeAttribute('aria-current');});}
+function stage(n){document.body.dataset.stage=String(n);document.querySelector('.workspace').setAttribute('aria-label',n===3?'내 서재와 책별 후기':'읽기 준비도 진단');document.querySelectorAll('#steps li').forEach((e,i)=>{e.classList.toggle('active',i===n);if(i===n)e.setAttribute('aria-current','step');else e.removeAttribute('aria-current');});}
 function error(e){notice.textContent=e.message+(e.traceId ? ` (문의 번호: ${e.traceId})` : '');notice.hidden=false;}
 async function run(fn){if(busy)return;busy=true;notice.hidden=true;app.querySelectorAll('button,input,select').forEach(e=>e.disabled=true);try{await fn();}catch(e){error(e);}finally{busy=false;app.querySelectorAll('button,input,select').forEach(e=>e.disabled=false);}}
 function focus(){app.querySelector('h1,legend')?.setAttribute('tabindex','-1');app.querySelector('h1,legend')?.focus();}
