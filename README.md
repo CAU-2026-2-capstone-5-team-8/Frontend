@@ -55,8 +55,22 @@ npm test
 BACKEND_URL=http://127.0.0.1:8089 npm start
 ```
 
-fixture는 메모리에서 단일 진단만 유지하며 프로필은 고정값입니다. 객관식 정답은 포함하거나 노출하지 않습니다. 실제 generated v4 import는 Backend의 documented `question-import` flow가 필요합니다. `npm start`는 fixture를 자동 실행하지 않습니다.
+fixture는 메모리에서 단일 진단만 유지하며 프로필은 고정값입니다. 상세 진단 fixture만 서버 내부에 테스트용 객관식 정답 인덱스를 사용합니다. 정답은 API 응답에 포함하지 않으며 production 정답/채점 구현이 아닙니다. 실제 generated v4 import는 Backend의 documented `question-import` flow가 필요합니다. `npm start`는 fixture를 자동 실행하지 않습니다.
 
 ## API 요청 예제
 
 VS Code REST Client 등에서 [requests/assessment.http](requests/assessment.http)를 열면 수동으로 동일 흐름을 실행할 수 있습니다. 예제 ID를 실제 응답으로 교체하고 **모든 발급 문항에 답변한 후** 완료 요청을 보내세요. `conceptId`가 아니라 `questions[].id`가 답변 API의 문항 ID입니다.
+
+
+## 상세 진단과 화면 개편 (2026-10-02)
+
+완료한 진단의 결과 화면에서 `GET /api/assessments/{sessionId}/diagnostics`를 별도로 호출합니다. 개념별 펼침 영역에는 기초/중간/심화 × 어휘/배경지식/개념 이해 응답 점수와 응답 수, 자기평가/객관식 출처 수, 다음 복습·확인 항목이 표시됩니다. 0%와 미측정은 구별하며 책 난이도나 숙달 확률로 해석하지 않습니다. 미등록 개념 ID는 원문을 표시합니다.
+
+- Backend PR #27, ML PR #31의 진단 API가 반영된 서버가 필요합니다. Frontend만 반영하면 서버 버전에 따라 상세 진단 사용 불가 안내가 나옵니다.
+- 상세 진단 로딩/실패/재시도는 프로필·추천과 독립적입니다. 화면 이동 후 늦게 도착한 응답은 새 화면을 덮어쓰지 않습니다.
+- 흰색·자주색 중심의 첫 화면, 실제 API 분야 라디오 선택, 제시문·객관식·결과·추천의 글자 크기와 여백을 정리했습니다. 외부 폰트/CDN/패키지를 추가하지 않았습니다.
+- 현재 ML 기준으로 다시 조회하므로 과거 저장 프로필과 같은 기준 버전이라고 보장하지 않습니다. 응답 점수는 표본 수와 자기평가 비중을 함께 보세요.
+
+자동 테스트에는 상세 진단 API 경로, 0%/미측정 구분, 출처 표시, HTML 이스케이프, 오류 및 재시도, 화면 이동 중 응답 도착을 추가했습니다. 브라우저에서는 9문항 완료→프로필→개념별 근거→추천 이동과 390px 화면을 fixture로 확인했습니다. 실제 Spring/DB/ML 전체 E2E나 모바일 실기기 검증은 아닙니다.
+
+fixture 서버 포트는 `PORT`로 바꿀 수 있습니다. `DIAGNOSTICS_UNAVAILABLE=1`로 실행하면 완료 후 상세 진단에 503을 반환하여 오류 UI를 확인할 수 있습니다. 진단 fixture의 수치는 테스트 응답에서 계산하지만 실제 ML 알고리즘을 사용하지 않습니다.
