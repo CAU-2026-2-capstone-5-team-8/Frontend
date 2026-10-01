@@ -28,9 +28,17 @@ test('static server exposes only frontend assets', async t => {
   assert.equal((await fetch(url)).status, 200);
   const asset=await fetch(url+'/src/diagnostics.js');
   assert.equal(asset.status,200);assert.match(asset.headers.get('content-type'),/javascript/);
+  assert.equal((await fetch(url+'/src/library.js')).status,200);
   for (const path of ['/server.mjs','/package.json','/.git/config','/test/api.test.mjs','/constructor','/toString']) {
     assert.equal((await fetch(url+path)).status, 404, path);
   }
+});
+
+test('proxy forwards shelf deletion and its empty response',async t=>{
+  const upstream=await listen(createServer((req,res)=>{assert.equal(req.method,'DELETE');assert.equal(req.url,'/api/users/1/shelf/2');res.writeHead(204).end();}),t);
+  const url=await listen(makeServer(upstream),t);
+  const response=await fetch(url+'/api/users/1/shelf/2',{method:'DELETE'});
+  assert.equal(response.status,204);assert.equal(await response.text(),'');
 });
 test('upstream redirects are not followed', async t => {
   const upstream=await listen(createServer((req,res)=>res.writeHead(302, {Location:'http://example.invalid/secret'}).end()), t);

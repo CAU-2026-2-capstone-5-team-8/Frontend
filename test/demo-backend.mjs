@@ -1,5 +1,6 @@
 // Browser UI-contract fixture only. This is not a synchronized production artifact or real Backend E2E.
 import {createServer} from 'node:http';
+import {libraryFixture} from './library-fixture.mjs';
 let session;
 const profile=()=>({sessionId:1, vocabulary:1/3, backgroundKnowledge:1/3, comprehension:1/3, calculationVersion:'stub-browser-fixture'});
 const selfReportPrompts=[
@@ -35,6 +36,7 @@ createServer(async(req,res)=>{
   let body='';for await(const chunk of req)body+=chunk;
   res.setHeader('Content-Type','application/json');
   const send=value=>res.end(JSON.stringify(value));
+  if(libraryFixture(req,res,body))return;
   if(req.url==='/api/topics')return send([{id:1,name:'수학',parentId:null},{id:2,name:'선형대수학',parentId:1}]);
   if(req.url==='/api/assessments'&&req.method==='POST'){
     const input=JSON.parse(body);

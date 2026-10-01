@@ -190,3 +190,27 @@ body:not([data-stage="0"]) main { margin-top:12px}
 
 @media(prefers-reduced-motion:reduce) { * { transition:none!important; scroll-behavior:auto!important}
 }
+/* Reading shelf: private notes and public reviews are distinct forms. */
+#library-nav { margin-left:auto; min-height:38px; padding:8px 14px; }
+#library-nav + .badge { margin-left:0; }
+body[data-stage="3"] nav[aria-label="진단 진행 단계"] { display:none; }
+.library-heading { display:flex; justify-content:space-between; align-items:start; gap:16px; }
+.library-heading button { font-size:11px; min-height:34px; padding:8px 12px; }
+.demo-identity { font-size:11px; color:var(--muted); line-height:1.7; }
+.library-tabs { display:flex; gap:8px; margin:24px 0; }
+.library-message { padding:14px; background:#f1f5f4; color:#36544b; border-radius:6px; font-size:13px; overflow-wrap:anywhere; }
+.shelf-book,.catalog-book { padding:24px 0; border-top:1px solid var(--line); }
+.shelf-book h2,.catalog-book h2 { margin:0 0 5px; overflow-wrap:anywhere; }
+.shelf-book label { display:block; margin:16px 0; font-size:13px; font-weight:600; }
+.shelf-book select,.shelf-book textarea { display:block; width:100%; font:inherit; font-size:14px; font-weight:400; margin-top:9px; padding:12px; border:1px solid #d9d2d6; border-radius:6px; color:inherit; background:#fff; }
+.shelf-book textarea { resize:vertical; min-height:88px; line-height:1.8; }
+.shelf-book .actions { margin-top:16px; }
+.review-editor { margin:24px 0 16px; padding:18px; background:#f7f5f6; border-radius:8px; }
+.review-editor summary { cursor:pointer; font-size:13px; color:var(--accent); font-weight:650; }
+.reviews-link { font-size:12px; }
+.public-review { padding:24px 0; border-top:1px solid var(--line); }
+.public-review > div { display:flex; justify-content:space-between; gap:12px; font-size:12px; }
+.public-review span { color:var(--accent); }
+.public-review p { white-space:pre-wrap; overflow-wrap:anywhere; font-size:14px; margin-bottom:0; }
+.library-pages { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:24px 0; font-size:12px; }
+@media(max-width:760px) { .header-caption { display:none; }.library-heading { display:block; }.library-heading button { margin:8px 0 16px; }.review-editor { padding:15px; } }

@@ -1,4 +1,5 @@
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+const pageNumber=value=>{if(!Number.isSafeInteger(value)||value<0)throw Error('페이지 번호를 확인해 주세요.');return value;};
 
 export function isQuestionAnswered(question) {
   if (!question || typeof question !== 'object') return false;
@@ -58,6 +59,7 @@ export function createApi(fetcher = fetch) {
     } catch {
       throw new Error('서버 응답을 확인하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.');
     }
+    if (response.ok && response.status === 204) return null;
     let data;
     try { data = await response.json(); } catch { data = null; }
     if (!response.ok || data === null) {
@@ -73,6 +75,20 @@ export function createApi(fetcher = fetch) {
     answerBody(value, choiceCount),
   );
   return {
+    books: async (page=0) => request(`/books?page=${pageNumber(page)}&size=20`),
+    shelf: async (userId,page=0,status='') => request(`/users/${id(userId)}/shelf?page=${pageNumber(page)}&size=20${status?'&status='+encodeURIComponent(status):''}`),
+    addShelf: async (userId,bookId) => request(`/users/${id(userId)}/shelf/${id(bookId)}`,'POST'),
+    saveShelf: async (userId,bookId,status,note='') => {
+      if(!['WANT_TO_READ','READING','FINISHED'].includes(status)||typeof note!=='string'||note.length>1000)throw Error('읽기 상태와 메모(1,000자 이내)를 확인해 주세요.');
+      return request(`/users/${id(userId)}/shelf/${id(bookId)}`,'PUT',{status,note});
+    },
+    removeShelf: async (userId,bookId) => request(`/users/${id(userId)}/shelf/${id(bookId)}`,'DELETE'),
+    bookReviews: async (bookId,page=0) => request(`/books/${id(bookId)}/reviews?page=${pageNumber(page)}&size=20`),
+    saveReview: async (userId,bookId,difficulty,text) => {
+      if(!['EASY','APPROPRIATE','HARD'].includes(difficulty)||typeof text!=='string'||!text.trim()||text.length>300)throw Error('체감 난이도와 후기(1~300자)를 확인해 주세요.');
+      return request(`/users/${id(userId)}/reviews/${id(bookId)}`,'PUT',{difficulty,text});
+    },
+    removeReview: async (userId,bookId) => request(`/users/${id(userId)}/reviews/${id(bookId)}`,'DELETE'),
     topics: () => request('/topics'),
     create: async (userId, topicId) => request('/assessments', 'POST', {userId:id(userId), topicId:id(topicId)}),
     session: async sessionId => request(`/assessments/${id(sessionId)}`),
