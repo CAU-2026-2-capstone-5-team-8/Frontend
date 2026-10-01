@@ -76,6 +76,7 @@ export function createApi(fetcher = fetch) {
     topics: () => request('/topics'),
     create: async (userId, topicId) => request('/assessments', 'POST', {userId:id(userId), topicId:id(topicId)}),
     session: async sessionId => request(`/assessments/${id(sessionId)}`),
+    diagnostics: async sessionId => request(`/assessments/${id(sessionId)}/diagnostics`),
     answer,
     answerSelfReport: async (sessionId, questionId, knowsConcept) => answer(sessionId, questionId, {knowsConcept}),
     answerMultipleChoice: async (sessionId, questionId, selectedChoiceIndex, choiceCount) => answer(

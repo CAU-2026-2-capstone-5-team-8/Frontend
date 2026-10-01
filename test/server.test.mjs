@@ -26,6 +26,8 @@ test('proxy preserves false answers, path, query and API error status', async t 
 test('static server exposes only frontend assets', async t => {
   const url=await listen(makeServer(), t);
   assert.equal((await fetch(url)).status, 200);
+  const asset=await fetch(url+'/src/diagnostics.js');
+  assert.equal(asset.status,200);assert.match(asset.headers.get('content-type'),/javascript/);
   for (const path of ['/server.mjs','/package.json','/.git/config','/test/api.test.mjs','/constructor','/toString']) {
     assert.equal((await fetch(url+path)).status, 404, path);
   }
