@@ -17,7 +17,7 @@ function answerFields(q,mode){
 }
 const saved=()=>{try{return localStorage.getItem('bookmatch-session');}catch{return null;}};
 const remember=value=>{try{value ? localStorage.setItem('bookmatch-session',value) : localStorage.removeItem('bookmatch-session');}catch{/* Storage is optional. */}};
-function stage(n){document.body.dataset.stage=String(n);document.querySelector('.workspace').setAttribute('aria-label',n===3?'내 서재와 책별 후기':'읽기 준비도 진단');document.querySelectorAll('#steps li').forEach((e,i)=>{e.classList.toggle('active',i===n);if(i===n)e.setAttribute('aria-current','step');else e.removeAttribute('aria-current');});}
+function stage(n){document.querySelector('#page-label').textContent=n===3?'내 서재':'읽기 진단';document.querySelectorAll('.nav-item').forEach(e=>{if(e.id===(n===3?'library-nav':'diagnosis-nav'))e.setAttribute('aria-current','page');else e.removeAttribute('aria-current');});document.body.dataset.stage=String(n);document.querySelector('.workspace').setAttribute('aria-label',n===3?'내 서재와 책별 후기':'읽기 준비도 진단');document.querySelectorAll('#steps li').forEach((e,i)=>{e.classList.toggle('active',i===n);if(i===n)e.setAttribute('aria-current','step');else e.removeAttribute('aria-current');});}
 function error(e){notice.textContent=e.message+(e.traceId ? ` (문의 번호: ${e.traceId})` : '');notice.hidden=false;}
 async function run(fn){if(busy)return;busy=true;notice.hidden=true;app.querySelectorAll('button,input,select').forEach(e=>e.disabled=true);try{await fn();}catch(e){error(e);}finally{busy=false;app.querySelectorAll('button,input,select').forEach(e=>e.disabled=false);}}
 function focus(){app.querySelector('h1,legend')?.setAttribute('tabindex','-1');app.querySelector('h1,legend')?.focus();}
@@ -44,7 +44,9 @@ function recommendations(data){if(!Array.isArray(data?.items))throw new Error('�
 const shortage=Number(data.diagnostics?.personalizedCandidateShortage||0);app.innerHTML=`<h1>지금 읽기 좋은 책</h1><p class="muted">나의 개념 준비도와 책의 선행지식을 비교한 결과입니다.</p>${cards||'<div class="empty-result"><strong>현재 개인화할 수 있는 책이 없습니다.</strong><p>도서의 개념 근거가 더 준비되면 추천 결과를 보여드릴 수 있어요.</p></div>'}${shortage>0?`<p class="note">요청한 수보다 개인화 가능한 책이 ${escape(shortage)}권 부족해 확인 가능한 결과만 표시했습니다.</p>`:''}<small>추천 모델: ${escape(data.modelVersion)} · 추천 번호: ${escape(data.id)}</small><div class="actions"><button id="profile-back" class="secondary">프로필로 돌아가기</button><button id="restart">처음부터 다시 하기</button></div>`;
 app.querySelectorAll('[data-save-book]').forEach(button=>button.onclick=()=>run(async()=>{await api.addShelf(user,Number(button.dataset.saveBook));library();}));
 app.querySelector('#profile-back').onclick=()=>result(lastProfile);app.querySelector('#restart').onclick=()=>{remember(null);lastProfile=null;choose();focus();};}
-function library(){stage(3);app.innerHTML='<div id="library-root"></div>';mountLibrary(app.querySelector('#library-root'),api,user,()=>{choose();focus();});focus();}
+function library(mode='shelf'){stage(3);app.innerHTML='<div id="library-root"></div>';mountLibrary(app.querySelector('#library-root'),api,user,()=>{choose();focus();},mode);focus();}
 document.querySelector('#library-nav').onclick=()=>{if(busy)return;user=app.querySelector('#user')?.value??user;notice.hidden=true;library();};
+document.querySelector('#diagnosis-nav').onclick=()=>{if(!busy){notice.hidden=true;choose();focus();}};
+document.querySelector('#catalog-nav').onclick=()=>{if(!busy){user=app.querySelector('#user')?.value??user;notice.hidden=true;library('catalog');}};
 async function load(){app.innerHTML='<h1>학습 분야를 불러오는 중…</h1>';try{topics=await api.topics();choose();}catch(e){app.innerHTML='<h1>연결을 확인해 주세요</h1><p>백엔드가 실행되면 학습 분야를 불러올 수 있어요.</p><button id="retry">다시 연결</button>';error(e);app.querySelector('#retry').onclick=()=>{notice.hidden=true;load();};}}
 load();
