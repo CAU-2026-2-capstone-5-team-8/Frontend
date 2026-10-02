@@ -1,1 +1,19 @@
-{"name":"bookmatch-frontend","version":"0.1.0","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test test/*.test.mjs","check":"node --check src/app.js && node --check src/api.js && node --check server.mjs && node --check test/demo-backend.mjs"},"engines":{"node":">=22"}}
+{
+  "name": "bookmatch-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npm --prefix native start",
+    "check": "npm run typecheck && npm run lint && node --check native/scripts/serve-web.mjs",
+    "web": "npm --prefix native run web",
+    "build:web": "npm --prefix native run build:web",
+    "android": "npm --prefix native run android",
+    "ios": "npm --prefix native run ios",
+    "typecheck": "npm --prefix native run typecheck",
+    "lint": "npm --prefix native run lint"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
