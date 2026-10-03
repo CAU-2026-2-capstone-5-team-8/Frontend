@@ -47,7 +47,8 @@
     "validate:questions": "node --experimental-strip-types scripts/validate-question-content.mjs",
     "postinstall": "node scripts/build-katex-css.mjs",
     "serve:web": "node scripts/serve-web.mjs",
-    "test:auth": "node --experimental-strip-types --test tests/auth.test.mjs"
+    "test:auth": "node --experimental-strip-types --test tests/auth.test.mjs",
+    "test:proxy": "node --test tests/webProxy.test.mjs"
   },
   "private": true
 }

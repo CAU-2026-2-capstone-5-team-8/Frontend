@@ -1,6 +1,6 @@
 # 책길 Frontend — React Native + Expo
 
-프론트는 `native/`의 React Native + Expo 앱으로 개발합니다. iOS·Android·웹이 같은 화면과 API를 공유하며, 도서 탐색, 개념별 진단, 공통 개념 지도, 도서별 비교, 능력별 추천과 저장 복원, 회원가입·로그인·내 계정을 제공합니다.
+프론트는 `native/`의 React Native + Expo 앱으로 개발합니다. iOS·Android·웹이 같은 화면과 API를 공유하며, 도서 탐색, 개념별 진단, 공통 개념 지도, 도서별 비교, 능력별 추천과 저장 복원, 회원가입·로그인·내 계정과 서재·독서 기록·공개 한줄평을 제공합니다.
 
 화면은 밝은 글래스모피즘 테마를 사용합니다. 색상·표면·반응형·접근성 기준은 [design.md](design.md)에 기록하며 공통 토큰과 컴포넌트로 구현합니다.
 
@@ -21,11 +21,14 @@ npm run web     # React Native 웹 빌드 + 로컬 API 프록시, 5183 포트
 ## 검증
 
 ```sh
-npm run check       # 타입·린트, 인증/콘텐츠 검사, 웹 서버 구문 검사
+npm run check       # 타입·린트, 인증/콘텐츠 검사, 웹 프록시 HTTP 검사
 npm run build:web   # RN 웹 번들 생성
 ```
 
 CI도 같은 검사를 실행합니다. 모바일 번들 및 실기기 검증 범위는 [앱 검증 기록](native/README.md#검증)을 참고하세요.
+
+최신 ML·Backend와 계정/서재 화면을 연결한 전체 흐름 재검증은
+[main 통합 검증 기록](docs/main-integration-2026-10-03.md)에 정리했습니다.
 
 ## 개발 방향
 
