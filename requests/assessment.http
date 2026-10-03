@@ -1,8 +1,8 @@
-@baseUrl = http://localhost:8080
+@baseUrl = http://localhost:8087
 @userId = 1
 # GET topics 응답에서 실제 하위 분야 ID를 입력하세요.
 @topicId = 2
-# POST assessments 응답에서 id와 questions[].id를 복사하세요.
+# POST assessments/concepts 응답에서 id와 questions[].id를 복사하세요.
 @sessionId = 1
 @issuedQuestionId = 1
 @multipleChoiceQuestionId = 2
@@ -10,8 +10,8 @@
 ### 1. 분야 확인
 GET {{baseUrl}}/api/topics
 
-### 2. 진단 생성 (반복 실행 시 새 진단이 생성됩니다)
-POST {{baseUrl}}/api/assessments
+### 2. RN 앱과 동일한 개념 진단 생성 (반복 실행 시 새 진단이 생성됩니다)
+POST {{baseUrl}}/api/assessments/concepts
 Content-Type: application/json
 
 {"userId": {{userId}}, "topicId": {{topicId}}}
