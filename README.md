@@ -27,6 +27,9 @@ npm run build:web   # RN 웹 번들 생성
 
 CI도 같은 검사를 실행합니다. 모바일 번들 및 실기기 검증 범위는 [앱 검증 기록](native/README.md#검증)을 참고하세요.
 
+최신 ML·Backend와 계정/서재 화면을 연결한 전체 흐름 재검증은
+[main 통합 검증 기록](docs/main-integration-2026-10-03.md)에 정리했습니다.
+
 ## 개발 방향
 
 2026-10-03 사용자 결정에 따라 React Native + Expo를 유일한 프론트로 사용합니다. 기존 HTML/JavaScript 화면, 개발 서버, 데모 fixture와 해당 테스트는 제거했습니다.
