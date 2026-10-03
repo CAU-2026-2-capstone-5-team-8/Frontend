@@ -2,6 +2,7 @@ import { useAuth } from "../../state/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { PublicBookReviews } from "../../components/PublicBookReviews";
 import { ConceptMap } from "../../components/ConceptMap";
 import {
   Button,
@@ -22,6 +23,25 @@ export default function BookScreen() {
 }
 function BookDetail({ id }: { id: number }) {
   const { session: login } = useAuth();
+  const [adding, setAdding] = useState(false);
+  const [shelfError, setShelfError] = useState<string | null>(null);
+  async function addToShelf() {
+    if (!login) {
+      router.push("/account");
+      return;
+    }
+    if (adding) return;
+    setAdding(true);
+    setShelfError(null);
+    try {
+      await api.addToShelf(id);
+      router.push("/shelf");
+    } catch (e) {
+      setShelfError((e as Error).message);
+    } finally {
+      setAdding(false);
+    }
+  }
   const { topic, profile, topics, selectTopic } = useLearning();
   const [book, setBook] = useState<Book | null>(null),
     [graph, setGraph] = useState<Graph | null>(null),
@@ -63,6 +83,21 @@ function BookDetail({ id }: { id: number }) {
       description={book?.author || undefined}
     >
       {error && <ErrorNotice message={error} />} {!book && <Loading />}
+      {book && (
+        <Card>
+          <Text style={s.cardTitle}>이 책을 내 서재에</Text>
+          <Text style={s.sub}>
+            읽기 상태와 개인 메모를 남기고, 한줄평을 공유해요. 이미 담은 책의
+            기록은 유지됩니다.
+          </Text>
+          {shelfError && <ErrorNotice message={shelfError} />}
+          <Button
+            label={login ? "내 서재에 담기" : "로그인하고 책 담기"}
+            disabled={adding}
+            onPress={() => void addToShelf()}
+          />
+        </Card>
+      )}
       {book?.description && (
         <Card>
           <Text style={s.cardTitle}>이 책에 대하여</Text>
@@ -105,6 +140,7 @@ function BookDetail({ id }: { id: number }) {
           )
         }
       />
+      {book && <PublicBookReviews bookId={book.id} />}
       <Button
         label="책 목록으로 돌아가기"
         secondary

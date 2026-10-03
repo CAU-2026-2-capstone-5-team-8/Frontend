@@ -1,3 +1,4 @@
+import { createLibraryApi } from "./libraryApi";
 import { Platform } from "react-native";
 import { authSession, type AuthSession } from "./authSession";
 import { createHttpClient, ApiError } from "./httpClient";
@@ -33,6 +34,7 @@ function userId() {
   return session.userId;
 }
 export const api = {
+  ...createLibraryApi(request, userId),
   login: (email: string, password: string) =>
     request<AuthSession>("/auth/login", "POST", { email, password }, {}, false),
   register: (email: string, password: string, displayName: string) =>

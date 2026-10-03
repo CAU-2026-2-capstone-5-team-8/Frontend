@@ -3,6 +3,7 @@ import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { colors } from "../theme/tokens";
 
 export type IconName =
+  | "shelf"
   | "account"
   | "book"
   | "map"
@@ -33,6 +34,11 @@ export function Icon({
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
+      {name === "shelf" && (
+        <>
+          <Path d="M3 21h18M5 4h4v14H5zM12 4h3v14h-3zM17 5l3-1 3 13-3 1z" />
+        </>
+      )}
       {name === "account" && (
         <>
           <Circle cx={12} cy={8} r={4} />

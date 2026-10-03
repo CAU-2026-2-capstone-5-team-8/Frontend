@@ -12,7 +12,7 @@ import { Icon, IconName } from "./Icon";
 import { FocusPressable as Pressable } from "./FocusPressable";
 
 const destinations: {
-  href: "/" | "/map" | "/recommendations" | "/account";
+  href: "/" | "/map" | "/recommendations" | "/account" | "/shelf";
   label: string;
   mobileLabel: string;
   icon: IconName;
@@ -30,6 +30,7 @@ const destinations: {
     mobileLabel: "맞춤 추천",
     icon: "sparkles",
   },
+  { href: "/shelf", label: "내 서재", mobileLabel: "내 서재", icon: "shelf" },
   {
     href: "/account",
     label: "내 계정",
