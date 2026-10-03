@@ -1,3 +1,4 @@
+import { useAuth } from "../../state/AuthContext";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
@@ -16,6 +17,7 @@ import { api } from "../../lib/api";
 import type { BookPage } from "../../lib/types";
 import { useLearning } from "../../state/LearningContext";
 export default function Catalog() {
+  const { session: login } = useAuth();
   const { topic, error, loading, refresh } = useLearning();
   const [bookResult, setBooks] = useState<{
       key: string;
@@ -77,8 +79,8 @@ export default function Catalog() {
               ? "나의 개념 진단하기"
               : "이 분야는 진단 준비 중"
           }
-          disabled={!topic?.conceptAssessmentReady}
-          onPress={() => router.push("/assessment")}
+          disabled={!!login && !topic?.conceptAssessmentReady}
+          onPress={() => router.push(login ? "/assessment" : "/account")}
         />
       </Card>
       {failure && <ErrorNotice message={failure} />}

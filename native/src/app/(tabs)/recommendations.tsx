@@ -1,3 +1,5 @@
+import { authSession } from "../../lib/authSession";
+import { useAuth } from "../../state/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +17,7 @@ import {
 import { api } from "../../lib/api";
 import { abilityLabels } from "../../lib/learning";
 import type { Ability } from "../../lib/types";
-import { storageKey, useLearning } from "../../state/LearningContext";
+import { useLearning } from "../../state/LearningContext";
 
 const statusLabels = {
   "ready-to-explore": "다음 배움 후보",
@@ -24,7 +26,9 @@ const statusLabels = {
 };
 
 export default function Recommendations() {
-  const { topic, profile, recommendation, saveRecommendation } = useLearning();
+  const { session: login } = useAuth();
+  const { topic, profile, recommendation, saveRecommendation, storageKey } =
+    useLearning();
   const [focus, setFocus] = useState<Ability | null>(null);
   const ability = focus || recommendation?.ability || "application";
   const result = recommendation?.ability === ability ? recommendation : null;
@@ -39,6 +43,7 @@ export default function Recommendations() {
   async function recommend() {
     if (!topic || !profile) return;
     const scope = currentScope.current;
+    const loginSnapshot = authSession.getSnapshot();
     setPending(true);
     setError(null);
     try {
@@ -56,6 +61,7 @@ export default function Recommendations() {
         };
         await AsyncStorage.setItem(requestStorage, key.current.value);
       }
+      if (authSession.getSnapshot() !== loginSnapshot) return;
       const received = result
         ? await api.recommendation(result.id)
         : await api.recommend(topic.id, profile.id, ability, key.current.value);
@@ -93,9 +99,9 @@ export default function Recommendations() {
         <>
           <Notice>개념 진단을 마치면 책과 나의 상태를 비교할 수 있어요.</Notice>
           <Button
-            label="개념 진단 시작"
-            disabled={!topic?.conceptAssessmentReady}
-            onPress={() => router.push("/assessment")}
+            label={login ? "개념 진단 시작" : "로그인하고 진단하기"}
+            disabled={!!login && !topic?.conceptAssessmentReady}
+            onPress={() => router.push(login ? "/assessment" : "/account")}
           />
         </>
       ) : (
@@ -110,6 +116,12 @@ export default function Recommendations() {
           disabled={pending}
           onPress={() => void recommend()}
         />
+      )}
+      {result && result.conceptProfileVersion !== "concept-abilities-v2" && (
+        <Notice>
+          이전 추천은 설명 제공 여부를 구분하기 전의 결과입니다. 새 진단 후
+          추천을 다시 받으면 사전 지식 기준으로 비교합니다.
+        </Notice>
       )}
       {error && <ErrorNotice message={error} retry={() => void recommend()} />}
       {result && (

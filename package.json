@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "npm --prefix native start",
-    "check": "npm run typecheck && npm run lint && node --check native/scripts/serve-web.mjs",
+    "check": "npm run typecheck && npm run lint && npm --prefix native run test:auth && npm --prefix native run test:content && node --check native/scripts/serve-web.mjs",
     "web": "npm --prefix native run web",
     "build:web": "npm --prefix native run build:web",
     "android": "npm --prefix native run android",

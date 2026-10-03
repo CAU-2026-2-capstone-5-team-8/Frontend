@@ -16,7 +16,7 @@ import { abilityLabels, graphLayout, observed, stateOf } from "../lib/learning";
 import type { Ability, ConceptProfile, Graph } from "../lib/types";
 import { Icon } from "./Icon";
 import { FocusPressable as Pressable } from "./FocusPressable";
-import { Card, colors, s, SegmentedControl } from "./ui";
+import { Card, colors, s, SegmentedControl, Notice } from "./ui";
 
 const options = (Object.keys(abilityLabels) as Ability[]).map((value) => ({
   value,
@@ -51,6 +51,22 @@ export function ConceptMap({
 
   return (
     <View style={{ gap: 20 }}>
+      {profile && profile.version !== "concept-abilities-v2" && (
+        <Notice>
+          이전 진단은 설명 제공 여부를 구분하지 않았어요. 새 진단을 완료하면
+          사전 지식 지도에 표시됩니다.
+        </Notice>
+      )}
+      {!!profile?.providedInformationAbilities?.length && (
+        <Notice>
+          설명 제공 후 수행한{" "}
+          {profile.providedInformationAbilities.reduce(
+            (n, a) => n + a.responseCount,
+            0,
+          )}
+          개 응답은 별도 기록했습니다. 아래 지도는 사전 지식 문항의 결과입니다.
+        </Notice>
+      )}
       <Card>
         <View style={s.row}>
           <View style={styles.heading}>

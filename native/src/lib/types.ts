@@ -12,6 +12,7 @@ export type Question = {
   id: number;
   conceptId: string | null;
   cognitiveOperation: string | null;
+  measurementContext: "prior-knowledge" | "provided-information" | null;
   passage: string | null;
   prompt: string;
   answerMode: "SELF_REPORT" | "MULTIPLE_CHOICE";
@@ -38,6 +39,8 @@ export type ConceptAbility = {
 export type ConceptProfile = {
   version: string;
   abilities: ConceptAbility[];
+  providedInformationAbilities?: ConceptAbility[];
+  legacyContextAbilities?: ConceptAbility[];
   selfReports: {
     conceptId: string;
     positiveCount: number;
@@ -115,8 +118,25 @@ export type Recommendation = {
   profileId: number;
   ability: Ability;
   modelVersion: string;
+  conceptProfileVersion?: string;
   candidateCount: number;
   mappedCandidateCount: number;
   unmappedCandidateCount: number;
   items: RecommendationItem[];
+};
+
+export type QuestionPreview = {
+  status: "review-pending";
+  questions: {
+    id: string;
+    topicId: string;
+    conceptId: string;
+    ability: Ability;
+    measurementContext: "prior-knowledge";
+    objective: string;
+    prompt: string;
+    choices: string[];
+    correctChoiceIndex: number;
+    explanation: string;
+  }[];
 };

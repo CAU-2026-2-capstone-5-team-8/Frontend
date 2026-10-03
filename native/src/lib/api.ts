@@ -1,6 +1,15 @@
 import { Platform } from "react-native";
+import { authSession, type AuthSession } from "./authSession";
+import { createHttpClient, ApiError } from "./httpClient";
+import type {
+  AccountProfile,
+  AccountUpdate,
+  ReadinessOverview,
+  ReadinessHistory,
+} from "./accountTypes";
 import type {
   Ability,
+  QuestionPreview,
   Book,
   BookPage,
   Graph,
@@ -10,63 +19,74 @@ import type {
   Topic,
 } from "./types";
 
+export { ApiError } from "./httpClient";
+
 const configuredBase = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "");
-export const API_BASE =
+export const API_BASE: string =
   Platform.OS === "web"
     ? "/api"
     : configuredBase || "http://127.0.0.1:8087/api";
-export const USER_ID = Number(process.env.EXPO_PUBLIC_USER_ID || "1");
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public code?: string,
-  ) {
-    super(message);
-  }
-}
-async function request<T>(
-  path: string,
-  method = "GET",
-  body?: unknown,
-  headers: Record<string, string> = {},
-): Promise<T> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
-  try {
-    const response = await fetch(API_BASE + path, {
-      method,
-      headers: { "Content-Type": "application/json", ...headers },
-      signal: controller.signal,
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    });
-    const data = await response.json().catch(() => null);
-    if (!response.ok || data === null)
-      throw new ApiError(
-        data?.message || "요청을 처리하지 못했어요. 다시 시도해 주세요.",
-        response.status,
-        data?.code,
-      );
-    return data as T;
-  } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new Error("연결을 확인하지 못했어요. 잠시 후 다시 시도해 주세요.");
-  } finally {
-    clearTimeout(timeout);
-  }
+const request = createHttpClient(API_BASE, authSession);
+function userId() {
+  const session = authSession.getSnapshot().session;
+  if (!session) throw new ApiError("로그인이 필요합니다.", 401);
+  return session.userId;
 }
 export const api = {
-  topics: () => request<Topic[]>("/topics"),
+  login: (email: string, password: string) =>
+    request<AuthSession>("/auth/login", "POST", { email, password }, {}, false),
+  register: (email: string, password: string, displayName: string) =>
+    request<AuthSession>(
+      "/auth/register",
+      "POST",
+      { email, password, displayName },
+      {},
+      false,
+    ),
+  revoke: (session: AuthSession) =>
+    request<void>(
+      "/auth/logout",
+      "POST",
+      undefined,
+      { Authorization: `Bearer ${session.accessToken}` },
+      false,
+    ),
+  me: () => request<AccountProfile>("/me"),
+  updateMe: (body: AccountUpdate) =>
+    request<AccountProfile>("/me", "PUT", body),
+  readiness: () => request<ReadinessOverview>("/me/readiness"),
+  history: (topicId: number, page = 0) =>
+    request<ReadinessHistory>(
+      `/me/readiness/${topicId}/history?page=${page}&size=5`,
+    ),
+  questionPreview: () =>
+    request<QuestionPreview>("/assessments/concept-preview"),
+  questionPreviewSummary: () =>
+    request<{ candidateCount: number; topicIds: string[] }>(
+      "/assessments/concept-preview/summary",
+    ),
+  topics: () => request<Topic[]>("/topics", "GET", undefined, {}, false),
   books: (topicId: number, page = 0) =>
-    request<BookPage>(`/books?topicId=${topicId}&page=${page}&size=12`),
-  book: (id: number) => request<Book>(`/books/${id}`),
+    request<BookPage>(
+      `/books?topicId=${topicId}&page=${page}&size=12`,
+      "GET",
+      undefined,
+      {},
+      false,
+    ),
+  book: (id: number) =>
+    request<Book>(`/books/${id}`, "GET", undefined, {}, false),
   graph: (topicId: number, bookId?: number) =>
     request<Graph>(
       `/topics/${topicId}/concept-map${bookId ? `?bookId=${bookId}` : ""}`,
+      "GET",
+      undefined,
+      {},
+      false,
     ),
   createSession: (topicId: number) =>
     request<Session>("/assessments/concepts", "POST", {
-      userId: USER_ID,
+      userId: userId(),
       topicId,
     }),
   session: (id: number) => request<Session>(`/assessments/${id}`),
@@ -83,7 +103,7 @@ export const api = {
   complete: (id: number) =>
     request<{ profile: Profile }>(`/assessments/${id}/complete`, "POST"),
   profile: (topicId: number) =>
-    request<Profile>(`/users/${USER_ID}/profiles/${topicId}`),
+    request<Profile>(`/users/${userId()}/profiles/${topicId}`),
   recommendation: (id: number) =>
     request<Recommendation>(`/learning-recommendations/${id}`),
   recommend: (
@@ -95,7 +115,7 @@ export const api = {
     request<Recommendation>(
       "/learning-recommendations",
       "POST",
-      { userId: USER_ID, topicId, profileId, ability, topK: 5 },
+      { userId: userId(), topicId, profileId, ability, topK: 5 },
       { "Idempotency-Key": key },
     ),
 };

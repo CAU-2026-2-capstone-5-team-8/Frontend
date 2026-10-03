@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pressable, PressableProps, StyleSheet } from "react-native";
+import { Platform, Pressable, PressableProps, StyleSheet } from "react-native";
 import { colors } from "../theme/tokens";
 
 export function FocusPressable({
@@ -9,9 +9,27 @@ export function FocusPressable({
   ...props
 }: PressableProps) {
   const [focused, setFocused] = useState(false);
+  // RN Web activates radio-role pressables with Enter; also support the standard Space key.
+  const keyboardProps =
+    Platform.OS === "web" && props.accessibilityRole === "radio"
+      ? {
+          onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
+            if (
+              !props.disabled &&
+              event.key === " " &&
+              !event.repeat &&
+              event.target === event.currentTarget
+            ) {
+              event.preventDefault();
+              event.currentTarget.click();
+            }
+          },
+        }
+      : {};
   return (
     <Pressable
       {...props}
+      {...keyboardProps}
       onFocus={(event) => {
         setFocused(true);
         onFocus?.(event);

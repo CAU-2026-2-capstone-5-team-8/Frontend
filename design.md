@@ -64,3 +64,10 @@ RN 타입 검사·린트, 웹·iOS·Android 번들 생성이 통과했다. 실�
 - [Expo SDK 57 BlurView](https://docs.expo.dev/versions/v57.0.0/sdk/blur-view/): 흐림과 Android 배경 대상·이전 버전 대체 처리
 - [Expo SDK 57 LinearGradient](https://docs.expo.dev/versions/v57.0.0/sdk/linear-gradient/): 공통 그라데이션
 - [React Native 0.86 AccessibilityInfo](https://reactnative.dev/docs/0.86/accessibilityinfo): 시스템 투명도 줄이기
+## 문제 본문과 수식
+
+문제·보기·해설은 공통 `QuestionContent`를 사용한다. 본문/제목 크기와 색상은 기존 읽기 토큰을 따른다.
+수식은 KaTeX로 지수·첨자·분수·행렬을 표시하며 긴 식은 내용 영역 안에서 가로로 확인한다.
+문제 전체가 가로로 넘치지 않게 하고 수식 클릭도 해당 보기 선택으로 이어지게 한다.
+웹은 MathML을 함께 제공하며 네이티브에서는 일반 문장을 Text로, 수식이 있는 내용을 내부 WebView로 표시한다.
+폰트·스타일을 포함하고 글자 크기 설정을 반영한다. 형식 오류는 원문과 안내를 남긴다.

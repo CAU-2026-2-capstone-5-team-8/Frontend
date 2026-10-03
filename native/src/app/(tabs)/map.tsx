@@ -1,3 +1,4 @@
+import { useAuth } from "../../state/AuthContext";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
@@ -15,6 +16,7 @@ import { api } from "../../lib/api";
 import type { Graph } from "../../lib/types";
 import { useLearning } from "../../state/LearningContext";
 export default function MapScreen() {
+  const { session: login } = useAuth();
   const { topic, profile } = useLearning();
   const [graph, setGraph] = useState<Graph | null>(null),
     [error, setError] = useState<string | null>(null);
@@ -64,9 +66,15 @@ export default function MapScreen() {
         <Loading />
       )}
       <Button
-        label={profile ? "개념 다시 진단하기" : "개념 진단 시작"}
-        disabled={!topic?.conceptAssessmentReady}
-        onPress={() => router.push("/assessment")}
+        label={
+          !login
+            ? "로그인하고 진단하기"
+            : profile
+              ? "개념 다시 진단하기"
+              : "개념 진단 시작"
+        }
+        disabled={!!login && !topic?.conceptAssessmentReady}
+        onPress={() => router.push(login ? "/assessment" : "/account")}
       />
     </Page>
   );

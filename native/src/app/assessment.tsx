@@ -3,21 +3,26 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { FocusPressable as Pressable } from "../components/FocusPressable";
+import { QuestionContent } from "../components/QuestionContent";
+import { questionContentLabel } from "../lib/questionContent";
 import {
   Button,
   Card,
   colors,
   ErrorNotice,
   Loading,
+  Notice,
   Page,
   s,
 } from "../components/ui";
-import { api, USER_ID } from "../lib/api";
+import { api } from "../lib/api";
 import { answered } from "../lib/learning";
 import type { Session } from "../lib/types";
-import { storageKey, useLearning } from "../state/LearningContext";
+import { useLearning } from "../state/LearningContext";
+import { useAuth } from "../state/AuthContext";
 export default function Assessment() {
-  const { topic, saveProfile } = useLearning();
+  const { session: login } = useAuth();
+  const { topic, saveProfile, storageKey } = useLearning();
   const [session, setSession] = useState<Session | null>(null),
     [index, setIndex] = useState(0),
     [selection, setSelection] = useState<{
@@ -32,6 +37,18 @@ export default function Assessment() {
       void AsyncStorage.getItem(storageKey(topic.id, "session")).then((v) =>
         setResumeId(v ? Number(v) : null),
       );
+  }, [topic, storageKey]);
+  const [previewReady, setPreviewReady] = useState(false);
+  useEffect(() => {
+    void api
+      .questionPreviewSummary()
+      .then((bank) =>
+        setPreviewReady(
+          bank.candidateCount > 0 &&
+            bank.topicIds.includes(topic?.mlTopicId || ""),
+        ),
+      )
+      .catch(() => setPreviewReady(false));
   }, [topic]);
   const question = session?.questions[index];
   const choice =
@@ -52,7 +69,7 @@ export default function Assessment() {
         resume && resumeId
           ? await api.session(resumeId)
           : await api.createSession(topic.id);
-      if (next.userId !== USER_ID || next.topicId !== topic.id)
+      if (next.userId !== login?.userId || next.topicId !== topic.id)
         throw Error("이 분야의 진단을 다시 시작해 주세요.");
       setSession(next);
       const first = next.questions.findIndex((q) => !answered(q));
@@ -122,6 +139,13 @@ export default function Assessment() {
             문제는 뜻·적용·추론을 구분해 기록합니다. 자기평가 응답은 문제 채점과
             분리해서 보여드려요.
           </Text>
+          {previewReady && (
+            <Button
+              label="새 문제 검토하기"
+              secondary
+              onPress={() => router.push("/question-review")}
+            />
+          )}
           <Button
             label="진단 시작"
             disabled={pending || !topic?.conceptAssessmentReady}
@@ -147,6 +171,12 @@ export default function Assessment() {
                 저장 완료 {session.questions.filter(answered).length}개
               </Text>
             </View>
+            {question.measurementContext === "provided-information" && (
+              <Notice>
+                설명을 읽은 뒤 적용하는 문제입니다. 이 결과는 기존에 알고 있던
+                지식과 따로 기록해요.
+              </Notice>
+            )}
             <Card>
               <Text style={s.sub}>
                 {question.answerMode === "SELF_REPORT"
@@ -165,14 +195,15 @@ export default function Assessment() {
                     borderColor: colors.line,
                   }}
                 >
-                  <Text style={s.body}>{question.passage}</Text>
+                  <QuestionContent source={question.passage} />
                 </View>
               )}
-              <Text style={s.cardTitle}>{question.prompt}</Text>
+              <QuestionContent source={question.prompt} variant="title" />
               {question.answerMode === "MULTIPLE_CHOICE" ? (
                 question.choices.map((text, i) => (
                   <Pressable
                     accessibilityRole="radio"
+                    accessibilityLabel={`${i + 1}. ${questionContentLabel(text)}`}
                     accessibilityState={{ checked: choice === i }}
                     aria-checked={choice === i}
                     key={i}
@@ -190,9 +221,8 @@ export default function Assessment() {
                       },
                     ]}
                   >
-                    <Text style={s.body}>
-                      {i + 1}. {text}
-                    </Text>
+                    <Text style={s.body}>{i + 1}.</Text>
+                    <QuestionContent source={text} interactive={false} />
                   </Pressable>
                 ))
               ) : (

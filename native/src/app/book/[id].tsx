@@ -1,3 +1,4 @@
+import { useAuth } from "../../state/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
@@ -20,6 +21,7 @@ export default function BookScreen() {
   return <BookDetail key={`${id}:${topic?.id}`} id={Number(id)} />;
 }
 function BookDetail({ id }: { id: number }) {
+  const { session: login } = useAuth();
   const { topic, profile, topics, selectTopic } = useLearning();
   const [book, setBook] = useState<Book | null>(null),
     [graph, setGraph] = useState<Graph | null>(null),
@@ -98,7 +100,9 @@ function BookDetail({ id }: { id: number }) {
         label={profile ? "나에게 추천된 책 보기" : "먼저 개념 진단하기"}
         disabled={!profile && !topic?.conceptAssessmentReady}
         onPress={() =>
-          router.push(profile ? "/recommendations" : "/assessment")
+          router.push(
+            !login ? "/account" : profile ? "/recommendations" : "/assessment",
+          )
         }
       />
       <Button

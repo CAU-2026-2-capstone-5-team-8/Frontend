@@ -9,7 +9,8 @@ export function observed(
   id: string,
   ability: Ability,
 ) {
-  return profile?.abilities.find(
+  if (profile?.version !== "concept-abilities-v2") return undefined;
+  return profile.abilities.find(
     (a) => a.conceptId === id && a.ability === ability,
   );
 }

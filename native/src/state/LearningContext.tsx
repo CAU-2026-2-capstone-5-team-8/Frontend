@@ -6,12 +6,13 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { api, API_BASE, ApiError, USER_ID } from "../lib/api";
+import { api, API_BASE, ApiError } from "../lib/api";
+import { useAuth } from "./AuthContext";
+import { accountStorageKey } from "../lib/authSession";
 import type { Profile, Recommendation, Topic } from "../lib/types";
 
-export const storageKey = (topicId: number, kind: string) =>
-  `bookpath:${API_BASE}:${USER_ID}:${topicId}:${kind}`;
 type State = {
+  storageKey: (topicId: number, kind: string) => string;
   topics: Topic[];
   topic: Topic | null;
   profile: Profile | null;
@@ -25,6 +26,13 @@ type State = {
 };
 const Context = createContext<State | null>(null);
 export function LearningProvider({ children }: { children: React.ReactNode }) {
+  const { session } = useAuth();
+  const userId = session?.userId ?? null;
+  const storageKey = useCallback(
+    (topicId: number, kind: string) =>
+      accountStorageKey(API_BASE, userId, topicId, kind),
+    [userId],
+  );
   const [topics, setTopics] = useState<Topic[]>([]),
     [topic, setTopic] = useState<Topic | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null),
@@ -37,7 +45,7 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setTopics(all);
       const saved = await AsyncStorage.getItem(
-        `bookpath:${API_BASE}:${USER_ID}:topic`,
+        accountStorageKey(API_BASE, userId, null, "topic"),
       );
       setTopic(
         (current) =>
@@ -52,12 +60,12 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
   useEffect(() => {
     void Promise.resolve().then(refresh);
   }, [refresh]);
   useEffect(() => {
-    if (!topic) return;
+    if (!topic || !userId) return;
     let active = true;
     void (async () => {
       try {
@@ -67,12 +75,12 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
         const saved = await AsyncStorage.getItem(
           storageKey(topic.id, "learningRecommendation"),
         );
-        if (saved) {
+        if (saved && active) {
           const r = await api.recommendation(Number(saved));
           if (
             active &&
             r.profileId === p.id &&
-            r.userId === USER_ID &&
+            r.userId === userId &&
             r.topicId === topic.id
           )
             setRecommendation(r);
@@ -85,31 +93,38 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [topic]);
-  const selectTopic = useCallback((t: Topic) => {
-    setError(null);
-    setProfile(null);
-    setRecommendation(null);
-    setTopic(t);
-    void AsyncStorage.setItem(
-      `bookpath:${API_BASE}:${USER_ID}:topic`,
-      String(t.id),
-    );
-  }, []);
+  }, [topic, userId, storageKey]);
+  const selectTopic = useCallback(
+    (t: Topic) => {
+      setError(null);
+      setProfile(null);
+      setRecommendation(null);
+      setTopic(t);
+      void AsyncStorage.setItem(
+        accountStorageKey(API_BASE, userId, null, "topic"),
+        String(t.id),
+      );
+    },
+    [userId],
+  );
   const saveProfile = useCallback((p: Profile) => {
     setProfile(p);
     setRecommendation(null);
   }, []);
-  const saveRecommendation = useCallback(async (r: Recommendation) => {
-    setRecommendation(r);
-    await AsyncStorage.setItem(
-      storageKey(r.topicId, "learningRecommendation"),
-      String(r.id),
-    );
-  }, []);
+  const saveRecommendation = useCallback(
+    async (r: Recommendation) => {
+      setRecommendation(r);
+      await AsyncStorage.setItem(
+        storageKey(r.topicId, "learningRecommendation"),
+        String(r.id),
+      );
+    },
+    [storageKey],
+  );
   return (
     <Context.Provider
       value={{
+        storageKey,
         topics,
         topic,
         profile,

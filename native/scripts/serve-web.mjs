@@ -41,6 +41,8 @@ createServer(async (req, res) => {
         chunks.push(chunk);
       }
       const headers = { "Content-Type": "application/json" };
+      if (typeof req.headers.authorization === "string")
+        headers.Authorization = req.headers.authorization;
       if (typeof req.headers["idempotency-key"] === "string")
         headers["Idempotency-Key"] = req.headers["idempotency-key"];
       const response = await fetch(

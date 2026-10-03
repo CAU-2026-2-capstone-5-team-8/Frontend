@@ -3,7 +3,14 @@ import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { colors } from "../theme/tokens";
 
 export type IconName =
-  "book" | "map" | "sparkles" | "arrow" | "info" | "contrast" | "check";
+  | "account"
+  | "book"
+  | "map"
+  | "sparkles"
+  | "arrow"
+  | "info"
+  | "contrast"
+  | "check";
 export function Icon({
   name,
   size = 22,
@@ -26,6 +33,12 @@ export function Icon({
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
+      {name === "account" && (
+        <>
+          <Circle cx={12} cy={8} r={4} />
+          <Path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+        </>
+      )}
       {name === "book" && (
         <>
           <Path d="M12 5.5C9 3.5 5.3 3.7 3 4.5v14c2.4-.8 6-.7 9 1.3 3-2 6.6-2.1 9-1.3v-14c-2.3-.8-6-1-9 1Z" />
