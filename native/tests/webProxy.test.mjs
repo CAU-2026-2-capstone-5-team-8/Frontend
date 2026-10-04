@@ -7,8 +7,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createWebServer } from "../scripts/serve-web.mjs";
 
-async function start(t, server) {
-  server.listen(0, "127.0.0.1");
+async function start(t, server, host = "127.0.0.1") {
+  server.listen(0, host);
   await once(server, "listening");
   t.after(
     () =>
@@ -17,7 +17,7 @@ async function start(t, server) {
         server.close(resolve);
       }),
   );
-  return `http://127.0.0.1:${server.address().port}`;
+  return `http://${host === "::" ? "[::1]" : host}:${server.address().port}`;
 }
 test("shelf and review DELETE reach Backend with bearer credentials and return empty 204", async (t) => {
   const received = [];
@@ -125,10 +125,14 @@ test("trust-all or malformed proxy configuration fails closed at startup", () =>
 
 test("two real socket peers remain distinct through the same web proxy", async (t) => {
   const upstream = await start(t, createServer((req, res) => res.end(req.headers["x-forwarded-for"])));
-  const proxy = await start(t, createWebServer({ backendUrl: upstream, trustedProxies: "" }));
-  for (const peer of ["127.0.0.2", "127.0.0.3"]) {
+  // IPv4 and IPv6 loopback exist on macOS and Linux without configuring aliases.
+  // One dual-stack listener also exercises normalization of IPv4-mapped peers.
+  const proxy = await start(t, createWebServer({ backendUrl: upstream, trustedProxies: "" }), "::");
+  for (const peer of ["127.0.0.1", "::1"]) {
+    const target = new URL(`${proxy}/api/auth/login`);
+    target.hostname = peer === "::1" ? "[::1]" : peer;
     const received = await new Promise((resolve, reject) => {
-      const req = request(`${proxy}/api/auth/login`, { method: "POST", localAddress: peer,
+      const req = request(target, { method: "POST", localAddress: peer,
         headers: { "X-Forwarded-For": "203.0.113.99" } }, (res) => {
         let text = ""; res.on("data", (chunk) => { text += chunk; }); res.on("end", () => resolve(text));
       });
