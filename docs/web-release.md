@@ -6,6 +6,14 @@ Backend and ML are separate services. Deploy this image behind an HTTPS ingress.
 
 ## Build and run
 
+### Client address trust boundary
+
+The web server overwrites `X-Forwarded-For` with the socket peer by default; browser-supplied `Forwarded` and `X-Real-IP` are never passed through. When an HTTPS ingress fronts this server, set `TRUSTED_PROXY_CIDRS` to its exact socket addresses/CIDRs. Only that allowlist may supply a chain, walked right-to-left to the first untrusted address. Malformed/oversized chains fall back to the socket peer. Hostnames, wildcard and `/0` are rejected.
+
+Backend must set `APP_AUTH_TRUSTED_PROXY_CIDRS` to this web server's socket CIDR, and retain `server.forward-headers-strategy=none`. Do not trust all private networks or expose Backend directly through the same trusted network. Without these explicit settings the safe fallback remains per-peer throttling, so multiple users through an unconfigured proxy will share a quota. The Backend change is required together with this web change; no browser API shape changes.
+
+See [Spring's proxy header security guidance](https://docs.spring.io/spring-security/reference/7.0/features/exploits/http.html). Trust configuration is operator-owned; no broad trust is enabled automatically.
+
 From the repository root, using Node 22.13 or newer supported by Expo 57:
 
 ```sh
@@ -45,7 +53,7 @@ Keep the previous working image until the new deployment passes the smoke checks
 ## Required service configuration and data
 
 Backend requires Java 21 and PostgreSQL 17 with `DB_URL`, `DB_USERNAME`,
-`DB_PASSWORD`, `APP_AUTH_MODE=required`, `ML_MODE=http`, and `ML_BASE_URL` pointing
+`DB_PASSWORD`, `SPRING_PROFILES_ACTIVE=production`, `APP_AUTH_MODE=required`, `ML_MODE=http`, and `ML_BASE_URL` pointing
 to the private ML service. Do not use the default stub mode for a live release.
 The Python service runs `uvicorn bookmatch_ml.api:create_app --factory` from the
 ML checkout with its locked dependencies and configuration artifacts available.
@@ -85,3 +93,23 @@ SMOKE_API_URL=http://127.0.0.1:5183/api SMOKE_ALLOW_WRITES=1 node native/scripts
 without claiming assessment/recommendation/shelf coverage. It is useful before
 catalog import, but does not replace the default full run. The script logs endpoint
 status codes and no passwords or bearer tokens. It does not delete the test account.
+
+### Verify both proxy and Backend login limits
+
+Start a fresh disposable Backend with required authentication and
+`APP_AUTH_TRUSTED_PROXY_CIDRS=127.0.0.1/32`. With no other authentication traffic,
+run this from the Frontend root (no catalog or ML calculation is needed):
+
+```sh
+SMOKE_BACKEND_URL=http://127.0.0.1:8088 SMOKE_ALLOW_AUTH_ATTEMPTS=1 \
+  node native/scripts/smoke-proxy-auth.mjs
+```
+
+This starts temporary loopback web proxies and sends 45 invalid login attempts
+through them to the actual Backend. It verifies separate client quotas, the
+account quota across changing addresses, right-to-left chain handling, rejection
+of browser header forgery, and preservation of `Retry-After` on 429 responses.
+It uses unique `example.invalid` account names and does not register accounts.
+Limits are process-local and remain consumed until their 60-second windows expire;
+use a fresh Backend or let those windows expire before rerunning. This check does
+not validate a deployed ingress configuration or ML/recommendation accuracy.

@@ -61,6 +61,9 @@ docker exec bookmatch-db pg_isready -U bookmatch -d bookmatch
 export DB_URL=jdbc:postgresql://127.0.0.1:5432/bookmatch
 export DB_USERNAME=bookmatch DB_PASSWORD="$POSTGRES_PASSWORD"
 export APP_AUTH_MODE=required ML_MODE=http ML_BASE_URL=http://127.0.0.1:8000
+export SPRING_PROFILES_ACTIVE=production
+# For this same-host example, Backend sees the web proxy on IPv4 loopback.
+export APP_AUTH_TRUSTED_PROXY_CIDRS=127.0.0.1/32
 export SERVER_PORT=8080
 ```
 
@@ -115,10 +118,17 @@ Run the web image on the same Linux host (or use a private container network):
 docker run -d --name bookmatch-web --restart unless-stopped \
   --network host --read-only --cap-drop=ALL --security-opt=no-new-privileges \
   -e HOST=127.0.0.1 -e PORT=5183 -e BACKEND_URL=http://127.0.0.1:8080 \
+  -e TRUSTED_PROXY_CIDRS=127.0.0.1/32 \
   bookmatch-web:release
 ```
 
 Configure the chosen HTTPS ingress to forward the public origin to loopback 5183.
+The loopback trust values above assume that ingress connects from `127.0.0.1`
+and overwrites client-provided forwarding headers with the actual client address.
+For other topologies, replace each allowlist with that layer's exact upstream
+socket addresses. Keep Backend private and `server.forward-headers-strategy=none`.
+The production profile enables Backend's startup guards; setting `NODE_ENV` on the
+web server does not enable them.
 Use a platform request limit/rate limit and database backups appropriate to the
 audience. Account recovery/email verification are not implemented; decide whether
 the current account capabilities fit a controlled pilot before public signup.
