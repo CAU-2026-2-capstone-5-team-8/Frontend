@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "expo-router";
 import {
   ActivityIndicator,
   ScrollView,
@@ -9,12 +10,10 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLearning } from "../state/LearningContext";
 import { colors, design } from "../theme/tokens";
-import { AppearanceToggle, Backdrop, Brand } from "./AppShell";
-import { GlassSurface } from "./GlassSurface";
+import { Backdrop } from "./AppShell";
 import { Icon } from "./Icon";
 import { FocusPressable as Pressable } from "./FocusPressable";
 export { colors } from "../theme/tokens";
@@ -30,15 +29,17 @@ export function Card({
   onPress?: () => void;
   accessibilityLabel?: string;
 }) {
-  return (
-    <GlassSurface
-      style={style}
-      contentStyle={s.cardContent}
+  return onPress ? (
+    <Pressable
+      accessibilityRole="button"
+      style={[s.card, style]}
       onPress={onPress}
       accessibilityLabel={accessibilityLabel}
     >
       {children}
-    </GlassSurface>
+    </Pressable>
+  ) : (
+    <View style={[s.card, style]}>{children}</View>
   );
 }
 
@@ -68,21 +69,11 @@ export function Button({
         pressed && { opacity: 0.8 },
       ]}
     >
-      {!secondary && (
-        <LinearGradient
-          pointerEvents="none"
-          colors={["#287C67", "#176351"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-      )}
       <Text
         style={[s.buttonText, { color: secondary ? colors.ink : colors.paper }]}
       >
         {label}
       </Text>
-      {!secondary && <Icon name="arrow" size={18} color={colors.paper} />}
     </Pressable>
   );
 }
@@ -116,7 +107,6 @@ export function ErrorNotice({
 }
 
 export function Page({
-  eyebrow,
   title,
   description,
   children,
@@ -128,39 +118,20 @@ export function Page({
 }) {
   const { width } = useWindowDimensions();
   const desktop = width >= design.desktopBreakpoint;
-  const { topic } = useLearning();
   return (
-    <SafeAreaView style={s.safe} edges={["top", "left", "right"]}>
+    <SafeAreaView style={s.safe} edges={["left", "right"]}>
       <Backdrop />
       <ScrollView
         contentContainerStyle={[
           s.page,
           {
             paddingHorizontal: desktop ? 40 : 20,
-            paddingBottom: desktop ? 48 : 120,
+            paddingBottom: 48,
           },
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={s.chrome}>
-          {desktop ? (
-            <Text style={s.breadcrumb}>
-              나의 학습 공간{" "}
-              <Text style={{ color: colors.ink }}> / {eyebrow}</Text>
-            </Text>
-          ) : (
-            <Brand />
-          )}
-          {desktop ? (
-            <Text style={s.topicLabel}>
-              {topic?.name || "책과 함께 시작하는 배움"}
-            </Text>
-          ) : (
-            <AppearanceToggle compact />
-          )}
-        </View>
         <View style={s.pageHeading}>
-          <Text style={s.eyebrow}>{eyebrow}</Text>
           <Text
             accessibilityRole="header"
             style={[s.title, desktop && { fontSize: 38, lineHeight: 49 }]}
@@ -172,7 +143,15 @@ export function Page({
         {children}
         <View style={s.pageFooter}>
           <View style={s.divider} />
-          <Text style={s.sub}>책길 · 알고 있는 개념에서 다음 배움으로</Text>
+          <Text style={s.sub}>책길 · 책을 고르고, 나의 속도로.</Text>
+          <Link
+            href="https://openlibrary.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={[s.sub, { paddingVertical: 12, alignSelf: "flex-start" }]}
+          >
+            표지 제공 Open Library
+          </Link>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -281,7 +260,7 @@ export function Loading() {
 export const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   page: {
-    paddingTop: 22,
+    paddingTop: 36,
     width: "100%",
     maxWidth: design.contentMaxWidth,
     alignSelf: "center",
@@ -323,13 +302,10 @@ export const s = StyleSheet.create({
   },
   cardContent: { padding: 22, gap: 14 },
   card: {
-    backgroundColor: colors.glass,
-    borderRadius: 24,
-    padding: 22,
+    paddingVertical: 24,
     gap: 14,
-    borderColor: colors.glassLine,
-    borderWidth: 1,
-    boxShadow: design.shadow,
+    borderColor: colors.line,
+    borderTopWidth: 1,
   },
   cardTitle: {
     fontSize: 18,
@@ -342,7 +318,7 @@ export const s = StyleSheet.create({
   sub: { fontSize: 12, lineHeight: 20, color: colors.muted },
   fieldLabel: { fontSize: 11, fontWeight: "600", color: colors.muted },
   button: {
-    borderRadius: 16,
+    borderRadius: 4,
     paddingHorizontal: 20,
     paddingVertical: 14,
     alignItems: "center",
@@ -355,12 +331,11 @@ export const s = StyleSheet.create({
   },
   primary: {
     backgroundColor: colors.green,
-    borderColor: "rgba(255,255,255,0.5)",
-    boxShadow: "0 5px 16px rgba(23,106,87,0.13)",
+    borderColor: colors.green,
   },
   secondary: {
-    backgroundColor: "rgba(255,255,255,0.76)",
-    borderColor: colors.glassLine,
+    backgroundColor: colors.paper,
+    borderColor: colors.line,
   },
   buttonText: {
     fontSize: 13,
@@ -372,8 +347,8 @@ export const s = StyleSheet.create({
   notice: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "rgba(231,245,238,0.9)",
-    borderRadius: 18,
+    backgroundColor: colors.soft,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.82)",
     padding: 17,
@@ -382,7 +357,7 @@ export const s = StyleSheet.create({
   noticeRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   error: {
     backgroundColor: colors.dangerSoft,
-    borderRadius: 18,
+    borderRadius: 4,
     padding: 18,
     gap: 14,
   },
@@ -394,12 +369,12 @@ export const s = StyleSheet.create({
     gap: 7,
     paddingHorizontal: 15,
     paddingVertical: 11,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.64)",
+    borderRadius: 4,
+    backgroundColor: colors.paper,
     borderWidth: 1,
     borderColor: colors.glassLine,
   },
-  activeChip: { backgroundColor: colors.soft, borderColor: "#AECFC2" },
+  activeChip: { backgroundColor: colors.soft, borderColor: colors.soft },
   activeDot: {
     width: 5,
     height: 5,
@@ -411,8 +386,8 @@ export const s = StyleSheet.create({
     flexDirection: "row",
     gap: 4,
     padding: 4,
-    backgroundColor: "rgba(218,229,234,0.62)",
-    borderRadius: 17,
+    backgroundColor: colors.unknown,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.glassLine,
     alignSelf: "flex-start",
@@ -424,7 +399,7 @@ export const s = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 17,
     paddingVertical: 9,
-    borderRadius: 13,
+    borderRadius: 4,
     flexShrink: 1,
     borderWidth: 1,
     borderColor: "transparent",
@@ -432,7 +407,6 @@ export const s = StyleSheet.create({
   selectedSegment: {
     backgroundColor: colors.paper,
     borderColor: colors.glassLine,
-    boxShadow: "0 2px 5px rgba(32,54,61,0.07)",
   },
   segmentText: {
     fontSize: 12,
@@ -453,7 +427,7 @@ export const s = StyleSheet.create({
     color: colors.green,
     paddingHorizontal: 11,
     paddingVertical: 6,
-    borderRadius: 999,
+    borderRadius: 4,
     alignSelf: "flex-start",
     overflow: "hidden",
     fontSize: 11,

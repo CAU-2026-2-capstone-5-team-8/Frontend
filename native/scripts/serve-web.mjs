@@ -22,13 +22,27 @@ export function createWebServer({
   if (
     !["http:", "https:"].includes(upstream.protocol) ||
     upstream.username ||
-    upstream.password
+    upstream.password ||
+    upstream.pathname !== "/" ||
+    upstream.search ||
+    upstream.hash
   )
     throw Error("Invalid backend address");
   return createServer(async (req, res) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("Cache-Control", "no-store");
     try {
       const url = new URL(req.url, "http://localhost");
+      if (url.pathname === "/healthz" && ["GET", "HEAD"].includes(req.method)) {
+        await stat(resolve(root, "index.html"));
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          req.method === "HEAD" ? undefined : JSON.stringify({ status: "ok" }),
+        );
+        return;
+      }
       if (url.pathname.startsWith("/api/")) {
         if (!["GET", "POST", "PUT", "DELETE"].includes(req.method)) {
           res.writeHead(405).end();
@@ -67,11 +81,18 @@ export function createWebServer({
         res.end(Buffer.from(await response.arrayBuffer()));
         return;
       }
-      if (req.method !== "GET") {
+      if (!["GET", "HEAD"].includes(req.method)) {
         res.writeHead(405).end();
         return;
       }
-      const path = resolve(root, "." + decodeURIComponent(url.pathname));
+      let pathname;
+      try {
+        pathname = decodeURIComponent(url.pathname);
+      } catch {
+        res.writeHead(400).end();
+        return;
+      }
+      const path = resolve(root, "." + pathname);
       if (path !== root && !path.startsWith(root + sep)) {
         res.writeHead(404).end();
         return;
@@ -81,15 +102,24 @@ export function createWebServer({
         if (!(await stat(selected)).isFile())
           selected = resolve(root, "index.html");
       } catch {
+        if (
+          extname(path) ||
+          pathname.startsWith("/_expo/") ||
+          pathname.startsWith("/assets/")
+        ) {
+          res.writeHead(404).end();
+          return;
+        }
         selected = resolve(root, "index.html");
       }
       const body = await readFile(selected);
       res.writeHead(200, {
+        "Cache-Control": "no-cache",
         "Content-Type":
           (types[extname(selected)] || "application/octet-stream") +
           "; charset=utf-8",
       });
-      res.end(body);
+      res.end(req.method === "HEAD" ? undefined : body);
     } catch {
       if (!res.headersSent)
         res.writeHead(502, { "Content-Type": "application/json" });
@@ -105,7 +135,17 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  createWebServer().listen(Number(process.env.PORT || 5183), "127.0.0.1", () =>
-    console.log(`책길: http://127.0.0.1:${process.env.PORT || 5183}`),
+  if (process.env.NODE_ENV === "production" && !process.env.BACKEND_URL)
+    throw Error("BACKEND_URL is required in production");
+  const host = process.env.HOST || "127.0.0.1";
+  const server = createWebServer().listen(
+    Number(process.env.PORT || 5183),
+    host,
+    () => console.log(`책길: http://${host}:${process.env.PORT || 5183}`),
   );
+  for (const signal of ["SIGTERM", "SIGINT"])
+    process.on(signal, () => {
+      server.close(() => process.exit(0));
+      setTimeout(() => process.exit(1), 10000).unref();
+    });
 }

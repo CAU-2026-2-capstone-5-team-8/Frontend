@@ -2,6 +2,7 @@ import { router, useIsFocused } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { ShelfEditor } from "../components/ShelfEditor";
+import { BookCover } from "../components/BookCover";
 import {
   Button,
   Card,
@@ -121,11 +122,26 @@ function MyShelf() {
           )}
           {data.content.map((entry) => (
             <Card key={entry.bookId}>
-              <Text style={s.badge}>
-                {readingOptions.find((o) => o.value === entry.status)?.label}
-              </Text>
-              <Text style={s.cardTitle}>{entry.title}</Text>
-              <Text style={s.sub}>{entry.author}</Text>
+              <View
+                style={{ flexDirection: "row", gap: 24, alignItems: "center" }}
+              >
+                <BookCover
+                  title={entry.title}
+                  coverUrl={entry.coverUrl}
+                  width={82}
+                  height={116}
+                />
+                <View style={{ flex: 1, gap: 10 }}>
+                  <Text style={s.badge}>
+                    {
+                      readingOptions.find((o) => o.value === entry.status)
+                        ?.label
+                    }
+                  </Text>
+                  <Text style={s.cardTitle}>{entry.title}</Text>
+                  <Text style={s.sub}>{entry.author}</Text>
+                </View>
+              </View>
               {entry.note !== "" && (
                 <View style={{ gap: 6 }}>
                   <Text style={s.fieldLabel}>나만 보는 메모</Text>

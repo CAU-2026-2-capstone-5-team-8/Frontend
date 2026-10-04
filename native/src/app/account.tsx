@@ -325,8 +325,7 @@ function AccountDetails() {
             </Text>
             {readiness.latestProfiles.length === 0 && (
               <Notice>
-                아직 완료한 진단이 없어요. 진단 전인 분야는 점수로 표시하지
-                않습니다.
+                아직 완료한 진단이 없어요. 개념 진단을 마치면 여기에 기록됩니다.
               </Notice>
             )}
             {readiness.latestProfiles.map((p) => (
@@ -359,10 +358,6 @@ function AccountDetails() {
                 {readiness.unassessedInterests.map((t) => t.name).join(", ")}
               </Notice>
             )}
-            <Text style={s.sub}>
-              문항에 답한 기록이며 전체 숙련도나 백분위가 아닙니다. 서로 다른
-              문항·계산 기준의 결과를 성장 수치로 비교하지 않아요.
-            </Text>
           </>
         )}
         {historyError && <ErrorNotice message={historyError} />}

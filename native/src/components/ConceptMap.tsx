@@ -110,7 +110,7 @@ export function ConceptMap({
           }
         >
           <View style={styles.canvasHeader}>
-            <Text style={s.sub}>검토된 선수관계</Text>
+            <Text style={s.sub}>함께 살펴볼 개념</Text>
             <Text style={s.sub}>좌우로 이동해 살펴보세요</Text>
           </View>
           <ScrollView
@@ -252,9 +252,7 @@ export function ConceptMap({
         {graph.book && (
           <View style={styles.heading}>
             <View style={styles.bookLegend} />
-            <Text style={s.sub}>
-              푸른 테두리 · 수집 근거에서 이 책과 연결된 개념
-            </Text>
+            <Text style={s.sub}>푸른 테두리 · 이 책에서 다루는 개념</Text>
           </View>
         )}
         <Text style={s.fieldLabel}>개념을 선택해 자세히 확인하세요</Text>
@@ -314,10 +312,6 @@ export function ConceptMap({
           )}
         </Card>
       )}
-      <Text style={s.sub}>
-        공통 개념 목록의 일부 영역을 평가한 결과예요. 미평가는 모른다는 뜻이
-        아닙니다. 연결선은 검토된 선수관계이며 목차 순서와 다릅니다.
-      </Text>
     </View>
   );
 }
