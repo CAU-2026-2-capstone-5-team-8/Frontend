@@ -4,6 +4,7 @@ export type ReadingStatus = "WANT_TO_READ" | "READING" | "FINISHED";
 export type Difficulty = "EASY" | "APPROPRIATE" | "HARD";
 export type OwnReview = { difficulty: Difficulty; text: string };
 export type ShelfEntry = {
+  coverUrl?: string | null;
   bookId: number;
   title: string;
   author: string;

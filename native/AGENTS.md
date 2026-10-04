@@ -4,7 +4,7 @@ This is an Expo/React Native mobile application. Prioritize mobile-first pattern
 
 - Continue frontend development with React Native + Expo unless the user explicitly changes this decision.
 - React Native is the sole frontend. The previous HTML/JavaScript app, demo fixture, and its tests have been removed at the user's request.
-- Before changing UI, read `../design.md` and reuse `src/theme/tokens.ts` and the shared components. Keep glass effects subordinate to reading and preserve assessment semantics.
+- Before changing UI, read `../design.md` and reuse `src/theme/tokens.ts` and the shared components. The user replaced the glass theme with a white, book-first storefront on 2026-10-04. Preserve assessment semantics; keep research caveats and internal evidence metadata in GitHub docs, not consumer screens.
 - The planned bookshelf feature captures a photo, identifies individual books, lets the user correct uncertain matches, and restricts recommendation candidates to the identified books. It is not implemented yet.
 - Keep OCR/book identification separate from concept assessment and recommendation. OCR text alone does not establish book depth or reading difficulty; use available catalog and concept evidence and preserve unknowns.
 

@@ -59,6 +59,7 @@ export type Profile = {
   evidence: { conceptProfile?: ConceptProfile };
 };
 export type Book = {
+  coverUrl?: string | null;
   id: number;
   title: string;
   author: string | null;
@@ -96,6 +97,11 @@ export type LearningState = {
   state: "correct" | "needs-practice" | "unmeasured";
 };
 export type RecommendationItem = {
+  internalPrerequisites?: string[];
+  externalPrerequisites?: string[];
+  readingChecklist?: ReadingChecklist;
+  sourceArtifactVersion?: string;
+  sourceArtifactHash?: string;
   bookId: number;
   title: string;
   author: string | null;
@@ -110,6 +116,36 @@ export type RecommendationItem = {
   coveredConcepts: string[];
   inferredPrerequisites: string[];
   reasons: string[];
+};
+export type ConceptEvidence = {
+  conceptId: string;
+  evidenceId: string;
+  sourceId: string;
+  sourceUrl: string | null;
+  evidenceType: string;
+  editionRelation: "exact" | "same_work" | "canonical_record" | "unspecified";
+  tocPath: string[] | null;
+  matchingAlias: string;
+  matchMethod: string;
+  provenanceHash: string;
+};
+export type ChecklistConcept = LearningState & {
+  isCovered: boolean;
+  isPrerequisite: boolean;
+  responseCount: number | null;
+  correctCount: number | null;
+  nextAction: "assess-concept" | "review-concept" | "continue-learning";
+  dependsOn: string[];
+  requiredFor: string[];
+  evidence: ConceptEvidence[];
+  teachingSufficiency: "unverified";
+};
+export type ReadingChecklist = {
+  version: string;
+  interpretation: string;
+  orderPolicy: string;
+  concepts: ChecklistConcept[];
+  limitations: string[];
 };
 export type Recommendation = {
   id: number;

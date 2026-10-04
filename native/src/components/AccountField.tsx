@@ -18,7 +18,7 @@ export function AccountField({
             borderWidth: 1,
             borderColor: colors.line,
             backgroundColor: colors.paper,
-            borderRadius: 14,
+            borderRadius: 4,
             padding: 12,
             ...(props.multiline
               ? { minHeight: 96, textAlignVertical: "top" as const }

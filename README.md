@@ -2,11 +2,11 @@
 
 프론트는 `native/`의 React Native + Expo 앱으로 개발합니다. iOS·Android·웹이 같은 화면과 API를 공유하며, 도서 탐색, 개념별 진단, 공통 개념 지도, 도서별 비교, 능력별 추천과 저장 복원, 회원가입·로그인·내 계정과 서재·독서 기록·공개 한줄평을 제공합니다.
 
-화면은 밝은 글래스모피즘 테마를 사용합니다. 색상·표면·반응형·접근성 기준은 [design.md](design.md)에 기록하며 공통 토큰과 컴포넌트로 구현합니다.
+화면은 흰 배경과 도서 중심의 서점형 구성을 사용합니다. 내부 근거·한계는 화면에 노출하지 않고 GitHub 문서에 남깁니다. 색상·반응형·접근성 기준은 [design.md](design.md)에 기록하며 공통 토큰과 컴포넌트로 구현합니다.
 
 ## 실행
 
-Node.js 22 이상이 필요합니다. Frontend 폴더에서 실행하세요.
+Node.js 22.13 이상이 필요합니다. Frontend 폴더에서 실행하세요.
 
 ```sh
 npm --prefix native ci
@@ -26,6 +26,8 @@ npm run build:web   # RN 웹 번들 생성
 ```
 
 CI도 같은 검사를 실행합니다. 모바일 번들 및 실기기 검증 범위는 [앱 검증 기록](native/README.md#검증)을 참고하세요.
+
+현재 배포용 Docker 이미지·환경 설정·실제 서버 smoke 검증은 [웹 배포](docs/web-release.md), 이번 개편의 범위와 제한은 [출시 검증 기록](docs/storefront-release.md)을 참고하세요. 디자인 시안이나 테스트 fixture를 실제 추천 서비스로 배포하지 않습니다.
 
 최신 ML·Backend와 계정/서재 화면을 연결한 전체 흐름 재검증은
 [main 통합 검증 기록](docs/main-integration-2026-10-03.md)에 정리했습니다.

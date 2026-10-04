@@ -32,10 +32,20 @@
     "@types/react": "~19.2.2",
     "eslint": "^9.39.5",
     "eslint-config-expo": "~57.0.2",
+    "patch-package": "^8.0.1",
     "prettier": "^3.9.9",
     "typescript": "~6.0.3"
   },
+  "overrides": {
+    "query-string@7.1.3": {
+      "decode-uri-component": "0.5.0"
+    }
+  },
   "scripts": {
+    "test:catalog-covers": "node --test tests/catalogCovers.test.mjs",
+    "test:query-decoding": "node --test tests/queryDecoding.test.mjs",
+    "test:presentation": "node --experimental-strip-types --test tests/bookPresentation.test.mjs",
+    "test:learning": "node --experimental-strip-types --test tests/learningRecommendations.test.mjs",
     "start": "node scripts/build-katex-css.mjs && expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -45,7 +55,7 @@
     "build:web": "node scripts/build-katex-css.mjs && expo export --platform web",
     "test:content": "node --experimental-strip-types --test tests/questionContent.test.mjs",
     "validate:questions": "node --experimental-strip-types scripts/validate-question-content.mjs",
-    "postinstall": "node scripts/build-katex-css.mjs",
+    "postinstall": "patch-package --error-on-fail && node scripts/build-katex-css.mjs",
     "serve:web": "node scripts/serve-web.mjs",
     "test:auth": "node --experimental-strip-types --test tests/auth.test.mjs",
     "test:proxy": "node --test tests/webProxy.test.mjs"

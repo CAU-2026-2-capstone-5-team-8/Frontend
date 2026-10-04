@@ -39,6 +39,9 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
     [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const [error, setError] = useState<string | null>(null),
     [loading, setLoading] = useState(true);
+  const [profileSettledFor, setProfileSettledFor] = useState<string | null>(
+    null,
+  );
   const refresh = useCallback(async () => {
     try {
       const all = await api.topics();
@@ -88,6 +91,8 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         if (active && !(e instanceof ApiError && e.status === 404))
           setError((e as Error).message);
+      } finally {
+        if (active) setProfileSettledFor(`${userId}:${topic.id}`);
       }
     })();
     return () => {
@@ -96,6 +101,7 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
   }, [topic, userId, storageKey]);
   const selectTopic = useCallback(
     (t: Topic) => {
+      if (t.id === topic?.id) return;
       setError(null);
       setProfile(null);
       setRecommendation(null);
@@ -105,7 +111,7 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
         String(t.id),
       );
     },
-    [userId],
+    [userId, topic?.id],
   );
   const saveProfile = useCallback((p: Profile) => {
     setProfile(p);
@@ -130,7 +136,11 @@ export function LearningProvider({ children }: { children: React.ReactNode }) {
         profile,
         recommendation,
         error,
-        loading,
+        loading:
+          loading ||
+          (!!userId &&
+            !!topic &&
+            profileSettledFor !== `${userId}:${topic.id}`),
         selectTopic,
         refresh,
         saveProfile,

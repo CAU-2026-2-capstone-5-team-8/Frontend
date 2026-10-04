@@ -1,151 +1,248 @@
-import { useAuth } from "../../state/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { BookCover } from "../../components/BookCover";
 import { PublicBookReviews } from "../../components/PublicBookReviews";
-import { ConceptMap } from "../../components/ConceptMap";
-import {
-  Button,
-  Card,
-  ErrorNotice,
-  Loading,
-  Notice,
-  Page,
-  s,
-} from "../../components/ui";
+import { ReadingChecklist } from "../../components/ReadingChecklist";
+import { Button, ErrorNotice, Loading, Page, s } from "../../components/ui";
 import { api } from "../../lib/api";
+import { authSession } from "../../lib/authSession";
+import {
+  currentRecommendation,
+  learningModel,
+} from "../../lib/learningRecommendations";
 import type { Book, Graph } from "../../lib/types";
+import { useAuth } from "../../state/AuthContext";
 import { useLearning } from "../../state/LearningContext";
+import { colors } from "../../theme/tokens";
+
 export default function BookScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { topic } = useLearning();
-  return <BookDetail key={`${id}:${topic?.id}`} id={Number(id)} />;
+  const { session } = useAuth();
+  return (
+    <BookDetail key={`${id}:${topic?.id}:${session?.userId}`} id={Number(id)} />
+  );
 }
+
 function BookDetail({ id }: { id: number }) {
   const { session: login } = useAuth();
+  const { topic, profile, topics, selectTopic, recommendation } = useLearning();
+  const wide = useWindowDimensions().width >= 800;
   const [adding, setAdding] = useState(false);
   const [shelfError, setShelfError] = useState<string | null>(null);
+  const [book, setBook] = useState<Book | null>(null);
+  const [graph, setGraph] = useState<Graph | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
+  const active = useRef(true);
+  const busy = useRef(false);
+  const saved = currentRecommendation(
+    recommendation,
+    login?.userId,
+    topic?.id,
+    profile?.id,
+    recommendation?.ability || "application",
+  );
+  const prepared = saved?.items.find((item) => item.bookId === id);
+  const checklist =
+    saved?.modelVersion === learningModel
+      ? prepared?.readingChecklist
+      : undefined;
+
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    let current = true;
+    void api
+      .book(id)
+      .then((b) => {
+        if (!current) return;
+        const belongs = b.topics.some((t) => t.id === topic?.id);
+        const actualTopic = topics.find((t) =>
+          b.topics.some((bt) => bt.id === t.id),
+        );
+        if (!belongs && actualTopic) selectTopic(actualTopic);
+        else {
+          setBook(b);
+          setError(null);
+        }
+      })
+      .catch((e) => {
+        if (current) setError(e.message);
+      });
+    if (topic)
+      void api
+        .graph(topic.id, id)
+        .then((g) => {
+          if (current) setGraph(g);
+        })
+        .catch(() => {
+          /* Catalog content remains available without optional concept labels. */
+        });
+    return () => {
+      current = false;
+    };
+  }, [id, topic, topics, selectTopic, retry]);
+
   async function addToShelf() {
     if (!login) {
       router.push("/account");
       return;
     }
-    if (adding) return;
+    if (busy.current) return;
+    busy.current = true;
+    const snapshot = authSession.getSnapshot();
     setAdding(true);
     setShelfError(null);
     try {
       await api.addToShelf(id);
-      router.push("/shelf");
+      if (active.current && authSession.getSnapshot() === snapshot)
+        router.push("/shelf");
     } catch (e) {
-      setShelfError((e as Error).message);
+      if (active.current && authSession.getSnapshot() === snapshot)
+        setShelfError((e as Error).message);
     } finally {
-      setAdding(false);
+      busy.current = false;
+      if (active.current) setAdding(false);
     }
   }
-  const { topic, profile, topics, selectTopic } = useLearning();
-  const [book, setBook] = useState<Book | null>(null),
-    [graph, setGraph] = useState<Graph | null>(null),
-    [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    void api
-      .book(Number(id))
-      .then((b) => {
-        if (active) {
-          const belongs = b.topics.some((t) => t.id === topic?.id);
-          const actualTopic = topics.find((t) =>
-            b.topics.some((bt) => bt.id === t.id),
-          );
-          if (!belongs && actualTopic) selectTopic(actualTopic);
-          else setBook(b);
-        }
-      })
-      .catch((e) => {
-        if (active) setError(e.message);
-      });
-    if (topic)
-      void api
-        .graph(topic.id, Number(id))
-        .then((g) => {
-          if (active) setGraph(g);
-        })
-        .catch((e) => {
-          if (active) setError(e.message);
-        });
-    return () => {
-      active = false;
-    };
-  }, [id, topic, topics, selectTopic]);
+
   return (
     <Page
-      eyebrow="책과 나의 개념"
-      title={book?.title || "책을 살펴보고 있어요"}
+      eyebrow="책 살펴보기"
+      title={book?.title || "책 살펴보기"}
       description={book?.author || undefined}
     >
-      {error && <ErrorNotice message={error} />} {!book && <Loading />}
+      {error && (
+        <ErrorNotice
+          message={error}
+          retry={() => {
+            setError(null);
+            setRetry((value) => value + 1);
+          }}
+        />
+      )}
+      {!book && !error && <Loading />}
       {book && (
-        <Card>
-          <Text style={s.cardTitle}>이 책을 내 서재에</Text>
-          <Text style={s.sub}>
-            읽기 상태와 개인 메모를 남기고, 한줄평을 공유해요. 이미 담은 책의
-            기록은 유지됩니다.
-          </Text>
-          {shelfError && <ErrorNotice message={shelfError} />}
-          <Button
-            label={login ? "내 서재에 담기" : "로그인하고 책 담기"}
-            disabled={adding}
-            onPress={() => void addToShelf()}
-          />
-        </Card>
+        <>
+          <View style={[styles.hero, wide && styles.heroWide]}>
+            <View style={styles.plate}>
+              <BookCover
+                title={book.title}
+                coverUrl={book.coverUrl}
+                width={165}
+                height={235}
+              />
+            </View>
+            <View style={styles.overview}>
+              {!!book.description && (
+                <>
+                  <Text accessibilityRole="header" style={s.cardTitle}>
+                    이 책에 대하여
+                  </Text>
+                  <Text style={styles.description}>{book.description}</Text>
+                </>
+              )}
+              <View style={styles.actions}>
+                <Button
+                  label={
+                    adding
+                      ? "담는 중…"
+                      : login
+                        ? "내 서재에 담기"
+                        : "로그인하고 책 담기"
+                  }
+                  disabled={adding}
+                  onPress={() => void addToShelf()}
+                />
+                <Text style={s.sub}>
+                  내 서재에서 읽기 기록과 메모를 남길 수 있어요.
+                </Text>
+              </View>
+              {shelfError && <ErrorNotice message={shelfError} />}
+            </View>
+          </View>
+          {checklist && saved ? (
+            <View style={styles.section}>
+              <ReadingChecklist
+                key={`${saved.id}:${id}`}
+                checklist={checklist}
+                labels={Object.fromEntries(
+                  (graph?.nodes || []).map((n) => [n.id, n.label]),
+                )}
+              />
+              <View style={styles.actions}>
+                <Button
+                  label="개념 진단 다시 받기"
+                  secondary
+                  disabled={!topic?.conceptAssessmentReady}
+                  onPress={() => router.push("/assessment")}
+                />
+              </View>
+            </View>
+          ) : (
+            <View style={styles.section}>
+              <Text accessibilityRole="header" style={s.cardTitle}>
+                다음으로 읽을 책을 찾고 있나요?
+              </Text>
+              <Text style={s.body}>
+                알고 있는 개념을 확인하고, 나에게 맞는 책을 찾아보세요.
+              </Text>
+              <View style={styles.actions}>
+                <Button
+                  label={profile ? "맞춤 추천 보기" : "개념 진단 시작"}
+                  secondary
+                  disabled={
+                    !!login && !profile && !topic?.conceptAssessmentReady
+                  }
+                  onPress={() =>
+                    router.push(
+                      !login
+                        ? "/account"
+                        : profile
+                          ? "/recommendations"
+                          : "/assessment",
+                    )
+                  }
+                />
+              </View>
+            </View>
+          )}
+          <PublicBookReviews bookId={book.id} />
+        </>
       )}
-      {book?.description && (
-        <Card>
-          <Text style={s.cardTitle}>이 책에 대하여</Text>
-          <Text style={s.body}>{book.description}</Text>
-        </Card>
-      )}
-      {graph?.book && !graph.book.available && (
-        <Notice>
-          이 책은 아직 공통 개념과 연결된 분석 자료가 없어요. 미확인을 개념
-          부재로 판단하지 않습니다.
-        </Notice>
-      )}
-      {graph?.book?.available && graph.book.coveredConcepts.length === 0 && (
-        <Notice>
-          목차 분석은 되어 있지만 아직 공통 개념과 연결된 내용이 없어요. 다루는
-          개념이 없다는 뜻은 아닙니다.
-        </Notice>
-      )}
-      {graph?.book?.available && (
-        <View style={s.row}>
-          <Text style={s.cardTitle}>책과 나의 개념 비교</Text>
-          <Text style={s.badge}>
-            확인된 개념 {graph.book.coveredConcepts.length}개
-          </Text>
-        </View>
-      )}
-      {graph && (
-        <ConceptMap graph={graph} profile={profile?.evidence.conceptProfile} />
-      )}
-      <Text style={s.sub}>
-        테두리는 수집 근거에서 연결된 책의 개념입니다. 목차에 없는 개념을 다루지
-        않는다고 단정할 수 없으며, 설명 깊이는 미확인입니다.
-      </Text>
-      <Button
-        label={profile ? "나에게 추천된 책 보기" : "먼저 개념 진단하기"}
-        disabled={!profile && !topic?.conceptAssessmentReady}
-        onPress={() =>
-          router.push(
-            !login ? "/account" : profile ? "/recommendations" : "/assessment",
-          )
-        }
-      />
-      {book && <PublicBookReviews bookId={book.id} />}
-      <Button
-        label="책 목록으로 돌아가기"
-        secondary
-        onPress={() => router.replace("/")}
-      />
+      <View style={styles.actions}>
+        <Button
+          label="책 목록으로 돌아가기"
+          secondary
+          onPress={() => router.replace("/")}
+        />
+      </View>
     </Page>
   );
 }
+const styles = StyleSheet.create({
+  hero: { gap: 28, paddingBottom: 32 },
+  heroWide: { flexDirection: "row", alignItems: "flex-start", gap: 48 },
+  plate: {
+    padding: 36,
+    minHeight: 307,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.soft,
+  },
+  overview: { flex: 1, minWidth: 0, gap: 20 },
+  description: { ...s.body, lineHeight: 27 },
+  actions: { alignItems: "flex-start", gap: 12 },
+  section: {
+    borderTopWidth: 1,
+    borderColor: colors.line,
+    paddingVertical: 28,
+    gap: 22,
+  },
+});

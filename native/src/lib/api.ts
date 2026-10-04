@@ -1,4 +1,5 @@
 import { createLibraryApi } from "./libraryApi";
+import { createLearningApi } from "./learningRecommendations";
 import { Platform } from "react-native";
 import { authSession, type AuthSession } from "./authSession";
 import { createHttpClient, ApiError } from "./httpClient";
@@ -9,13 +10,11 @@ import type {
   ReadinessHistory,
 } from "./accountTypes";
 import type {
-  Ability,
   QuestionPreview,
   Book,
   BookPage,
   Graph,
   Profile,
-  Recommendation,
   Session,
   Topic,
 } from "./types";
@@ -35,6 +34,7 @@ function userId() {
 }
 export const api = {
   ...createLibraryApi(request, userId),
+  ...createLearningApi(request, userId),
   login: (email: string, password: string) =>
     request<AuthSession>("/auth/login", "POST", { email, password }, {}, false),
   register: (email: string, password: string, displayName: string) =>
@@ -106,18 +106,4 @@ export const api = {
     request<{ profile: Profile }>(`/assessments/${id}/complete`, "POST"),
   profile: (topicId: number) =>
     request<Profile>(`/users/${userId()}/profiles/${topicId}`),
-  recommendation: (id: number) =>
-    request<Recommendation>(`/learning-recommendations/${id}`),
-  recommend: (
-    topicId: number,
-    profileId: number,
-    ability: Ability,
-    key: string,
-  ) =>
-    request<Recommendation>(
-      "/learning-recommendations",
-      "POST",
-      { userId: userId(), topicId, profileId, ability, topK: 5 },
-      { "Idempotency-Key": key },
-    ),
 };

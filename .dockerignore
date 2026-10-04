@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.expo
+**/.local-checks
+**/.env
+**/.env.*
+**/*.log
+.git
+.github
+docs
+requests

@@ -40,10 +40,6 @@ export function PublicBookReviews({ bookId }: { bookId: number }) {
   return (
     <Card>
       <Text style={s.cardTitle}>독자들의 한줄평</Text>
-      <Text style={s.sub}>
-        체감 난이도는 독자의 경험이에요. 책의 분석 난이도나 추천 점수는 바꾸지
-        않습니다.
-      </Text>
       {error ? (
         <ErrorNotice message={error} retry={() => setReload((n) => n + 1)} />
       ) : !data ? (
