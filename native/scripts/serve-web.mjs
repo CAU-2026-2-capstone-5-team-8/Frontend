@@ -2,6 +2,34 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { BlockList, isIP } from "node:net";
+
+// Trust is opt-in. Never forward an arbitrary browser-supplied client identity.
+function clientAddressResolver(configuration) {
+  const trusted = new BlockList();
+  for (const entry of configuration.split(",").map((s) => s.trim()).filter(Boolean)) {
+    const [address, mask, extra] = entry.split("/");
+    const family = isIP(address);
+    const bits = mask === undefined ? (family === 4 ? 32 : 128) : Number(mask);
+    if (!family || extra !== undefined || !Number.isInteger(bits) || bits < 1 ||
+        bits > (family === 4 ? 32 : 128) || (mask !== undefined && !/^\d+$/.test(mask)))
+      throw Error("Invalid trusted proxy CIDR");
+    trusted.addSubnet(address, bits, family === 4 ? "ipv4" : "ipv6");
+  }
+  const normalize = (address) => address?.startsWith("::ffff:") && isIP(address.slice(7)) === 4
+    ? address.slice(7) : address;
+  const isTrusted = (address) => !!isIP(address) && trusted.check(address, isIP(address) === 4 ? "ipv4" : "ipv6");
+  return (req) => {
+    const peer = normalize(req.socket.remoteAddress);
+    const header = req.headers["x-forwarded-for"];
+    if (!isTrusted(peer) || typeof header !== "string" || header.length > 2048) return peer;
+    const hops = header.split(",").map((s) => normalize(s.trim()));
+    if (hops.length > 16 || hops.some((h) => !isIP(h))) return peer;
+    let current = peer;
+    for (let i = hops.length - 1; i >= 0 && isTrusted(current); i--) current = hops[i];
+    return current;
+  };
+}
 const types = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -16,7 +44,9 @@ const types = {
 export function createWebServer({
   backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:8087",
   directory = fileURLToPath(new URL("../dist/", import.meta.url)),
+  trustedProxies = process.env.TRUSTED_PROXY_CIDRS || "",
 } = {}) {
+  const clientAddress = clientAddressResolver(trustedProxies);
   const root = resolve(directory);
   const upstream = new URL(backendUrl);
   if (
@@ -59,6 +89,7 @@ export function createWebServer({
           chunks.push(chunk);
         }
         const headers = { "Content-Type": "application/json" };
+        headers["X-Forwarded-For"] = clientAddress(req);
         if (typeof req.headers.authorization === "string")
           headers.Authorization = req.headers.authorization;
         if (typeof req.headers["idempotency-key"] === "string")
@@ -73,7 +104,9 @@ export function createWebServer({
             ...(size ? { body: Buffer.concat(chunks) } : {}),
           },
         );
+        const retryAfter = response.headers.get("retry-after");
         res.writeHead(response.status, {
+          ...(retryAfter ? { "Retry-After": retryAfter } : {}),
           "Content-Type":
             response.headers.get("content-type") || "application/json",
           "Cache-Control": "no-store",

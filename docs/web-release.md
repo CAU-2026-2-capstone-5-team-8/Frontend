@@ -6,6 +6,14 @@ Backend and ML are separate services. Deploy this image behind an HTTPS ingress.
 
 ## Build and run
 
+### Client address trust boundary
+
+The web server overwrites `X-Forwarded-For` with the socket peer by default; browser-supplied `Forwarded` and `X-Real-IP` are never passed through. When an HTTPS ingress fronts this server, set `TRUSTED_PROXY_CIDRS` to its exact socket addresses/CIDRs. Only that allowlist may supply a chain, walked right-to-left to the first untrusted address. Malformed/oversized chains fall back to the socket peer. Hostnames, wildcard and `/0` are rejected.
+
+Backend must set `APP_AUTH_TRUSTED_PROXY_CIDRS` to this web server's socket CIDR, and retain `server.forward-headers-strategy=none`. Do not trust all private networks or expose Backend directly through the same trusted network. Without these explicit settings the safe fallback remains per-peer throttling, so multiple users through an unconfigured proxy will share a quota. The Backend change is required together with this web change; no browser API shape changes.
+
+See [Spring's proxy header security guidance](https://docs.spring.io/spring-security/reference/7.0/features/exploits/http.html). Trust configuration is operator-owned; no broad trust is enabled automatically.
+
 From the repository root, using Node 22.13 or newer supported by Expo 57:
 
 ```sh
