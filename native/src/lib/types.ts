@@ -19,6 +19,7 @@ export type Question = {
   choices: string[];
   knowsConcept: boolean | null;
   selectedChoiceIndex: number | null;
+  translation?: { language: "ko"; passage: string | null; prompt: string; choices: string[] } | null;
 };
 export type Session = {
   id: number;

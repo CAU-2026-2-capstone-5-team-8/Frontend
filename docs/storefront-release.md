@@ -46,3 +46,10 @@ URL decoder의 런타임 문제는 수정했다. 나머지 npm audit 경고는 �
 Provider-discovered fields now show source status and explicit book-list refresh. Failed-source retry derives its provider list on the server. The control appears on the catalog and prepared/new-field request results; login is required. Polling continues while queued/running, and completion reloads the visible book list. Existing books remain visible during collection. Question banks and diagnosis are not changed by this control. Curated fields do not expose it yet.
 
 Validation: TypeScript and Expo lint passed; web export passed. Provider and catalog integration are verified separately from browser interaction or iOS/Android device testing.
+
+2026-10-06: Assessment defaults to a prepared Korean display translation and provides an
+original/Korean toggle. Passage and choices switch together; choice indices and saved answers stay
+unchanged. Missing translations fall back to the original. While a session is open, polling merges
+only translation fields, preserving local selections and answer-write responses. Korean text uses
+the existing Markdown/KaTeX component. Rendering/API checks are separate from browser click and
+physical-device validation.
