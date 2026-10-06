@@ -1,5 +1,6 @@
 import { createLibraryApi } from "./libraryApi";
 import { createLearningApi } from "./learningRecommendations";
+import { createTopicRequestApi } from "./topicRequests";
 import { Platform } from "react-native";
 import { authSession, type AuthSession } from "./authSession";
 import { createHttpClient, ApiError } from "./httpClient";
@@ -35,6 +36,7 @@ function userId() {
 export const api = {
   ...createLibraryApi(request, userId),
   ...createLearningApi(request, userId),
+  ...createTopicRequestApi(request),
   login: (email: string, password: string) =>
     request<AuthSession>("/auth/login", "POST", { email, password }, {}, false),
   register: (email: string, password: string, displayName: string) =>

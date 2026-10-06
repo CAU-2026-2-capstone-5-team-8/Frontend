@@ -11,7 +11,6 @@ import {
   ViewStyle,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLearning } from "../state/LearningContext";
 import { colors, design } from "../theme/tokens";
 import { Backdrop } from "./AppShell";
 import { Icon } from "./Icon";
@@ -201,50 +200,7 @@ export function SegmentedControl<T extends string>({
   );
 }
 
-export function TopicPicker() {
-  const { topics, topic, selectTopic } = useLearning();
-  return (
-    <View style={{ gap: 10 }}>
-      <Text style={s.fieldLabel}>살펴볼 분야</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={s.chips}
-      >
-        {topics
-          .filter((t) => t.parentId !== null)
-          .map((t) => (
-            <Pressable
-              key={t.id}
-              accessibilityRole="button"
-              accessibilityLabel={t.name}
-              accessibilityState={{ selected: t.id === topic?.id }}
-              aria-selected={t.id === topic?.id}
-              onPress={() => selectTopic(t)}
-              style={({ pressed }) => [
-                s.chip,
-                t.id === topic?.id && s.activeChip,
-                pressed && { opacity: 0.75 },
-              ]}
-            >
-              {t.id === topic?.id && <View style={s.activeDot} />}
-              <Text
-                style={[
-                  s.chipText,
-                  t.id === topic?.id && {
-                    color: colors.green,
-                    fontWeight: "600",
-                  },
-                ]}
-              >
-                {t.name}
-              </Text>
-            </Pressable>
-          ))}
-      </ScrollView>
-    </View>
-  );
-}
+export { TopicPicker } from "./TopicPicker";
 
 export function Loading() {
   return (

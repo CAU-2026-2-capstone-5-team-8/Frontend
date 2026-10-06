@@ -53,6 +53,7 @@ function AuthenticatedLayout() {
               <Stack.Screen name="book/[id]" />
               <Stack.Screen name="account" />
               <Stack.Screen name="shelf" />
+              <Stack.Screen name="topic-request" />
               <Stack.Protected guard={!!session}>
                 <Stack.Screen name="assessment" />
                 <Stack.Screen name="question-review" />

@@ -43,6 +43,9 @@ test('v2 keys cannot collide with legacy requests or another ability/profile', (
   assert.notEqual(requestKind(9, 'application'), 'learningRequest:9:application');
   assert.notEqual(requestKind(9, 'application'), requestKind(10, 'application'));
   assert.notEqual(requestKind(9, 'application'), requestKind(9, 'reasoning'));
+  // Recompute with the same assessment, but do not replay a completed result.
+  assert.notEqual(requestKind(9, 'application'), requestKind(9, 'application', 42));
+  assert.notEqual(requestKind(9, 'application', 42), requestKind(9, 'application', 43));
 });
 
 test('only a matching account/topic/profile/ability snapshot can be presented', () => {
