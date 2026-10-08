@@ -119,7 +119,8 @@ export function CatalogRefresh({
       setSubmitting(false);
     }
   }
-  if (!session || !supported) return null;
+  if (!session) return null;
+  if (!supported) return <TopicPreparation topicId={topicId} onUpdated={onUpdated} />;
   if (state && !state.available && !error) return null;
   return (
     <View style={{ gap: 12, paddingVertical: 16 }}>
