@@ -39,3 +39,26 @@ export function topicChoices(
         normalize(item.mlTopicId || "").includes(search)),
   );
 }
+
+export function topicSections(topics: Topic[], query: string) {
+  const parents = new Set(topics.map((item) => item.parentId));
+  const matching = query.trim()
+    ? topicChoices(topics, null, query)
+    : topics.filter((item) => item.parentId !== null && !parents.has(item.id));
+  const sections = new Map<
+    number,
+    { key: string; title: string; data: Topic[] }
+  >();
+  for (const item of matching) {
+    const parentId = item.parentId!;
+    if (!sections.has(parentId)) {
+      sections.set(parentId, {
+        key: String(parentId),
+        title: topicPath(item, topics) || "그 밖의 분야",
+        data: [],
+      });
+    }
+    sections.get(parentId)!.data.push(item);
+  }
+  return [...sections.values()];
+}
