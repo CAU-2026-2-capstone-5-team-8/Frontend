@@ -369,9 +369,11 @@ export default function TopicRequestPage() {
                           <Text style={s.body}>관련 책 {field.bookCount}권을 찾았어요.</Text>
                           {field.providers.map((provider) => (
                             <Text key={provider.id} style={s.sub}>
-                              {({ yes24: "YES24", open_library: "Open Library", google_books: "Google Books" } as Record<string, string>)[provider.id] ?? provider.id}
+                              {({ yes24: "YES24", open_library: "Open Library", google_books: "Google Books", national_library: "국립중앙도서관" } as Record<string, string>)[provider.id] ?? provider.id}
                               {provider.status === "collected"
                                 ? ` · ${provider.bookCount}권 확인`
+                                : provider.status === "not_configured"
+                                  ? " · 연결 준비 중"
                                 : provider.statusCode === 429
                                   ? " · 요청 한도로 다시 확인 필요"
                                   : " · 다시 확인 필요"}

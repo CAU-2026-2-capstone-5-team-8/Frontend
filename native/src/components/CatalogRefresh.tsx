@@ -10,11 +10,13 @@ const providerNames: Record<string, string> = {
   yes24: "YES24",
   open_library: "Open Library",
   google_books: "Google Books",
+  national_library: "국립중앙도서관",
 };
 const providerStatus: Record<string, string> = {
   collected: "확인 완료",
   provider_failed: "다시 확인 필요",
   not_collected: "아직 확인 전",
+  not_configured: "연결 준비 중",
   unmapped_language: "해외 검색어 준비 중",
   unmapped_category: "해외 분류 연결 준비 중",
 };
