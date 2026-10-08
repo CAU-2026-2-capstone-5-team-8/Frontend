@@ -58,7 +58,8 @@
     "postinstall": "patch-package --error-on-fail && node scripts/build-katex-css.mjs",
     "serve:web": "node scripts/serve-web.mjs",
     "test:auth": "node --experimental-strip-types --test tests/auth.test.mjs",
-    "test:proxy": "node --test tests/webProxy.test.mjs"
+    "test:proxy": "node --test tests/webProxy.test.mjs",
+    "test:assessment-translation": "node --experimental-strip-types --test tests/assessmentTranslation.test.mjs"
   },
   "private": true
 }
