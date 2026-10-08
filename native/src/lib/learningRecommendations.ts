@@ -50,8 +50,12 @@ export function createLearningApi(
     },
   };
 }
-export const requestKind = (profileId: number, ability: Ability) =>
-  `learningRequest:${learningModel}:${profileId}:${ability}`;
+export const requestKind = (
+  profileId: number,
+  ability: Ability,
+  previousRecommendationId?: number,
+) =>
+  `learningRequest:${learningModel}:${profileId}:${ability}${previousRecommendationId === undefined ? "" : `:after:${previousRecommendationId}`}`;
 
 export function currentRecommendation(
   r: Recommendation | null,

@@ -150,19 +150,20 @@ function RecommendationResults({
     setPending(true);
     setError(null);
     try {
-      let received;
-      if (modern && result) received = await api.recommendation(result.id);
-      else {
-        const location = storageKey(topic.id, requestKind(profile.id, ability));
-        let key = await AsyncStorage.getItem(location);
-        if (!key) {
-          key = `rn-learning-v2-${profile.id}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-          await AsyncStorage.setItem(location, key);
-        }
-        if (!active.current || authSession.getSnapshot() !== loginSnapshot)
-          return;
-        received = await api.recommend(topic.id, profile.id, ability, key);
+      // A completed result starts a new calculation; retries of that calculation
+      // retain the same key until the replacement result has been saved.
+      const location = storageKey(
+        topic.id,
+        requestKind(profile.id, ability, modern ? result?.id : undefined),
+      );
+      let key = await AsyncStorage.getItem(location);
+      if (!key) {
+        key = `rn-learning-v2-${profile.id}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        await AsyncStorage.setItem(location, key);
       }
+      if (!active.current || authSession.getSnapshot() !== loginSnapshot)
+        return;
+      const received = await api.recommend(topic.id, profile.id, ability, key);
       if (active.current && authSession.getSnapshot() === loginSnapshot)
         await saveRecommendation(received);
     } catch (e) {
@@ -209,7 +210,7 @@ function RecommendationResults({
             style={[styles.textButton, { alignSelf: "flex-end" }]}
           >
             <Text style={styles.textButtonLabel}>
-              {pending ? "불러오는 중…" : "새로고침"}
+              {pending ? "책을 찾고 있어요…" : "추천 다시 받기"}
             </Text>
           </FocusPressable>
         ) : null

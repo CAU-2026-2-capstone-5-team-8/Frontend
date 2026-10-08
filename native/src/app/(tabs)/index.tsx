@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, useWindowDimensions, View } from "react-native";
+import { CatalogRefresh } from "../../components/CatalogRefresh";
 import { BookTile } from "../../components/BookTile";
 import {
   Button,
@@ -75,6 +76,17 @@ export default function Catalog() {
       description="궁금한 분야에서 다음으로 읽을 책을 찾아보세요."
     >
       <TopicPicker />
+      {topic && (
+        <CatalogRefresh
+          key={topic.id}
+          topicId={topic.id}
+          slug={topic.mlTopicId}
+          onUpdated={() => {
+            setRevision((value) => value + 1);
+            void refresh();
+          }}
+        />
+      )}
       {error && <ErrorNotice message={error} retry={() => void refresh()} />}
       <View
         style={{

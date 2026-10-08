@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "npm --prefix native start",
-    "check": "npm run typecheck && npm run lint && npm --prefix native run test:auth && npm --prefix native run test:content && npm --prefix native run test:proxy && npm --prefix native run test:learning && npm --prefix native run test:presentation && npm --prefix native run test:query-decoding && npm --prefix native run test:catalog-covers",
+    "check": "npm run typecheck && npm run lint && npm --prefix native run test:auth && npm --prefix native run test:content && npm --prefix native run test:proxy && npm --prefix native run test:learning && npm --prefix native run test:presentation && npm --prefix native run test:query-decoding && npm --prefix native run test:catalog-covers && npm --prefix native run test:assessment-translation",
     "web": "npm --prefix native run web",
     "build:web": "npm --prefix native run build:web",
     "android": "npm --prefix native run android",

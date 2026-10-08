@@ -9,6 +9,7 @@ export type IconName =
   | "map"
   | "sparkles"
   | "arrow"
+  | "chevron-down"
   | "info"
   | "contrast"
   | "check";
@@ -67,6 +68,7 @@ export function Icon({
         </>
       )}
       {name === "arrow" && <Path d="M5 12h14m-6-6 6 6-6 6" />}
+      {name === "chevron-down" && <Path d="m6 9 6 6 6-6" />}
       {name === "info" && (
         <>
           <Circle cx={12} cy={12} r={9} />

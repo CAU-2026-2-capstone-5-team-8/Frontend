@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { FocusPressable as Pressable } from "../components/FocusPressable";
 import { QuestionContent } from "../components/QuestionContent";
@@ -17,6 +17,7 @@ import {
 } from "../components/ui";
 import { api } from "../lib/api";
 import { answered } from "../lib/learning";
+import { assessmentDisplay, mergeSessionTranslations } from "../lib/assessmentTranslation";
 import type { Session } from "../lib/types";
 import { useLearning } from "../state/LearningContext";
 import { useAuth } from "../state/AuthContext";
@@ -51,6 +52,26 @@ export default function Assessment() {
       .catch(() => setPreviewReady(false));
   }, [topic]);
   const question = session?.questions[index];
+  const [originalId, setOriginalId] = useState<number | null>(null);
+  const display = question ? assessmentDisplay(question, originalId === question.id) : null;
+  const translationPoll = useRef({ id: null as number | null, attempts: 0 });
+  useEffect(() => {
+    if (!session || !session.questions.some((q) => q.answerMode === "MULTIPLE_CHOICE" && !q.translation)) return;
+    if (translationPoll.current.id !== session.id) translationPoll.current = { id: session.id, attempts: 0 };
+    if (translationPoll.current.attempts >= 12) return;
+    let active = true;
+    let inFlight = false;
+    const timer = setInterval(() => {
+      if (inFlight) return;
+      if (translationPoll.current.attempts >= 12) { clearInterval(timer); return; }
+      translationPoll.current.attempts += 1;
+      inFlight = true;
+      void api.session(session.id).then((next) => {
+        if (active) setSession((current) => mergeSessionTranslations(current, next));
+      }).catch(() => {}).finally(() => { inFlight = false; });
+    }, 5000);
+    return () => { active = false; clearInterval(timer); };
+  }, [session]);
   const choice =
     selection?.id === question?.id
       ? (selection?.value ?? null)
@@ -178,6 +199,7 @@ export default function Assessment() {
               </Notice>
             )}
             <Card>
+              <View style={s.row}>
               <Text style={s.sub}>
                 {question.answerMode === "SELF_REPORT"
                   ? "자기평가 · 문제 채점과 별도 기록"
@@ -185,7 +207,15 @@ export default function Assessment() {
                     ? `문제 평가 · ${question.cognitiveOperation === "apply" ? "계산·적용" : question.cognitiveOperation === "recognize" || question.cognitiveOperation === "recall" ? "뜻·성질" : "설명·추론"}`
                     : "문제 평가 · 수행 능력 분류 확인 중"}
               </Text>
-              {question.passage && (
+              {question.translation && (
+                <Button
+                  label={display?.translated ? "원문 보기" : "한국어 보기"}
+                  secondary
+                  onPress={() => setOriginalId(display?.translated ? question.id : null)}
+                />
+              )}
+              </View>
+              {display?.passage && (
                 <View
                   style={{
                     backgroundColor: colors.paper,
@@ -195,12 +225,12 @@ export default function Assessment() {
                     borderColor: colors.line,
                   }}
                 >
-                  <QuestionContent source={question.passage} />
+                  <QuestionContent source={display.passage} />
                 </View>
               )}
-              <QuestionContent source={question.prompt} variant="title" />
+              <QuestionContent source={display?.prompt ?? question.prompt} variant="title" />
               {question.answerMode === "MULTIPLE_CHOICE" ? (
-                question.choices.map((text, i) => (
+                (display?.choices ?? question.choices).map((text, i) => (
                   <Pressable
                     accessibilityRole="radio"
                     accessibilityLabel={`${i + 1}. ${questionContentLabel(text)}`}
