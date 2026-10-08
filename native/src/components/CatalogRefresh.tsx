@@ -35,6 +35,7 @@ export function CatalogRefresh({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const callback = useRef(onUpdated);
+  const requestVersion = useRef(0);
   const completed = useRef<string | null>(null);
   const supported = !!slug && (slug.startsWith("search-") || slug.startsWith("field-"));
   const running = state?.status === "QUEUED" || state?.status === "RUNNING";
@@ -43,20 +44,22 @@ export function CatalogRefresh({
   }, [onUpdated]);
   useEffect(() => {
     let active = true;
+    const version = ++requestVersion.current;
     if (!session || !supported) return;
     void api
       .topicCatalogState(topicId)
       .then((result) => {
-        if (active) {
+        if (active && version === requestVersion.current) {
           setState(result);
           setError(null);
         }
       })
       .catch((e: Error) => {
-        if (active) setError(e.message);
+        if (active && version === requestVersion.current) setError(e.message);
       });
     return () => {
       active = false;
+      if (version === requestVersion.current) requestVersion.current += 1;
     };
   }, [topicId, session, supported]);
   useEffect(() => {
@@ -64,14 +67,15 @@ export function CatalogRefresh({
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     async function poll() {
+      const version = requestVersion.current;
       try {
         const result = await api.topicCatalogState(topicId);
-        if (active) {
+        if (active && version === requestVersion.current) {
           setState(result);
           setError(null);
         }
       } catch (e) {
-        if (active) setError((e as Error).message);
+        if (active && version === requestVersion.current) setError((e as Error).message);
       } finally {
         if (active) timer = setTimeout(() => void poll(), 5000);
       }
@@ -94,20 +98,23 @@ export function CatalogRefresh({
   }, [state]);
 
   async function reload() {
+    const version = ++requestVersion.current;
     try {
-      setState(await api.topicCatalogState(topicId));
-      setError(null);
+      const result = await api.topicCatalogState(topicId);
+      if (version === requestVersion.current) { setState(result); setError(null); }
     } catch (e) {
-      setError((e as Error).message);
+      if (version === requestVersion.current) setError((e as Error).message);
     }
   }
   async function start(mode: "ALL" | "FAILED") {
+    const version = ++requestVersion.current;
     setSubmitting(true);
     setError(null);
     try {
-      setState(await api.refreshTopicCatalog(topicId, mode));
+      const result = await api.refreshTopicCatalog(topicId, mode);
+      if (version === requestVersion.current) setState(result);
     } catch (e) {
-      setError((e as Error).message);
+      if (version === requestVersion.current) setError((e as Error).message);
     } finally {
       setSubmitting(false);
     }

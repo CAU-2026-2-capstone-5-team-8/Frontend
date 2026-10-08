@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { CatalogRefresh } from "../components/CatalogRefresh";
 import { AccountField } from "../components/AccountField";
@@ -29,6 +29,7 @@ export default function TopicRequestPage() {
   const [name, setName] = useState(
     typeof params.name === "string" ? params.name.slice(0, 120) : "",
   );
+  const readyIds = useRef(new Set<number>());
   const [requests, setRequests] = useState<TopicRequest[]>([]);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(!!session);
@@ -53,11 +54,15 @@ export default function TopicRequestPage() {
 
   useEffect(() => {
     let active = true;
+    readyIds.current.clear();
     if (!session) return;
     void api
       .topicRequests()
       .then((items) => {
-        if (active) setRequests(items);
+        if (active) {
+          items.forEach((item) => { if (item.status === "BOOKS_READY") readyIds.current.add(item.id); });
+          setRequests(items);
+        }
       })
       .catch((e: Error) => {
         if (active) setListError(e.message);
@@ -80,8 +85,9 @@ export default function TopicRequestPage() {
         if (active) {
           setRequests(items);
           setListError(null);
-          if (items.some((item) => item.status === "BOOKS_READY"))
+          if (items.some((item) => item.status === "BOOKS_READY" && !readyIds.current.has(item.id)))
             await refresh();
+          if (active) items.forEach((item) => { if (item.status === "BOOKS_READY") readyIds.current.add(item.id); });
         }
       } catch (e) {
         if (active) setListError((e as Error).message);

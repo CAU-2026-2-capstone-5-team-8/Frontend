@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { FocusPressable as Pressable } from "../components/FocusPressable";
 import { QuestionContent } from "../components/QuestionContent";
@@ -17,7 +17,7 @@ import {
 } from "../components/ui";
 import { api } from "../lib/api";
 import { answered } from "../lib/learning";
-import { assessmentDisplay } from "../lib/assessmentTranslation";
+import { assessmentDisplay, mergeSessionTranslations } from "../lib/assessmentTranslation";
 import type { Session } from "../lib/types";
 import { useLearning } from "../state/LearningContext";
 import { useAuth } from "../state/AuthContext";
@@ -54,17 +54,21 @@ export default function Assessment() {
   const question = session?.questions[index];
   const [originalId, setOriginalId] = useState<number | null>(null);
   const display = question ? assessmentDisplay(question, originalId === question.id) : null;
+  const translationPoll = useRef({ id: null as number | null, attempts: 0 });
   useEffect(() => {
     if (!session || !session.questions.some((q) => q.answerMode === "MULTIPLE_CHOICE" && !q.translation)) return;
+    if (translationPoll.current.id !== session.id) translationPoll.current = { id: session.id, attempts: 0 };
+    if (translationPoll.current.attempts >= 12) return;
     let active = true;
+    let inFlight = false;
     const timer = setInterval(() => {
+      if (inFlight) return;
+      if (translationPoll.current.attempts >= 12) { clearInterval(timer); return; }
+      translationPoll.current.attempts += 1;
+      inFlight = true;
       void api.session(session.id).then((next) => {
-        if (active) setSession((current) => current?.id === next.id ? {
-          ...current,
-          questions: current.questions.map((q) => ({ ...q,
-            translation: next.questions.find((item) => item.id === q.id)?.translation ?? q.translation })),
-        } : current);
-      }).catch(() => {});
+        if (active) setSession((current) => mergeSessionTranslations(current, next));
+      }).catch(() => {}).finally(() => { inFlight = false; });
     }, 5000);
     return () => { active = false; clearInterval(timer); };
   }, [session]);
